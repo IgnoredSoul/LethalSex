@@ -20,3 +20,6 @@
     - Phase 1: Random spoopy sound effects and noises
     - Phase 2: Breathing, voices and other sound effects
     - Phase 3: ***IM IN YOUR WALLS :)***
+
+## Future plans
+- Sniff my balls
