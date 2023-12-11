@@ -15,11 +15,11 @@
 
 - Settings will be restored when the player is not near the dog.
 
-## Worse Insanity:
-- Added 3 sound phases based on your insanity level.
-    - Phase 1: Random spoopy sound effects and noises
-    - Phase 2: Breathing, voices and other sound effects
-    - Phase 3: ***IM IN YOUR WALLS :)***
+## Schizophrenia:
+- When sanity is above 40 (80 seconds) and fear is above 0.4. Random noises will play from random distance, pitch and volume.
+
+## Scared Doors:
+- When walking through a door, the door has a 10% chance to slam shut.
 
 ## Future plans
 - Sniff my balls
