@@ -1,5 +1,6 @@
 # LethalSex
-<b>Note: The source code is not currently public, but you can find information about the project below. uwu</b>
+<b>Note: The source code is not currently public, but you can find information about the project below. uwu</b></br>
+also there is no sex :)
 
 ![LETHALSEXIMAGE](https://github.com/IgnoredSoul/LethalSex/assets/61690983/f5beeeb1-cd97-40b9-a2be-c36ed468c2ee)
 
