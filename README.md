@@ -1,8 +1,11 @@
 # LethalSex
 <b>Note: The source code is not currently public, but you can find information about the project below. uwu</b></br>
 
-![LETHALSEXIMAGE](https://github.com/IgnoredSoul/LethalSex/assets/61690983/f5beeeb1-cd97-40b9-a2be-c36ed468c2ee)
-
+<div align="center">
+<img src="https://github.com/IgnoredSoul/LethalSex/assets/61690983/f5beeeb1-cd97-40b9-a2be-c36ed468c2ee"/>
+<img src="https://github.com/IgnoredSoul/LethalSex/assets/61690983/a3ca1827-391e-4cf3-a7f7-a49a5fc3a2ab" width=41%/>
+</div>
+    
 ## Advanced HUD:
 - Voice
     - Three icons to indicate your voice level (None, Low, High).
