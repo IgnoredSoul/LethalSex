@@ -57,7 +57,7 @@ namespace LethalSex
 
         private const string modGUID = "LethalSex";
         private const string modName = "LethalSex";
-        private const string modVersion = "0.0.1";
+        private const string modVersion = "0.1.1";
 
         internal static ManualLogSource mls { get; private set; }
         internal static Main Instance { get; private set; }
