@@ -1,6 +1,6 @@
 <div align="center">
     
-# LethalSex
+# LethalSex (Redoing this whole repo when Im done with the current project!)
     
 <bold>TO THE BLOODY ADMINS OF THUNDER. THERE IS NO SEX. THE NAME IS MISLEADING AND YOU CAN SEE BY THE OPEN SOURCE CODE AND THE MODULES DOWN BELOW!!! PLEASE FUCKING READ!!!</bold>
 
