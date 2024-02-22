@@ -1,45 +1,43 @@
 <div align="center">
-    
-# LethalSex 
 
-(Redoing this whole repo when Im done with the current project!)
-<bold>TO THE BLOODY ADMINS OF THUNDER. THERE IS NO SEX. THE NAME IS MISLEADING AND YOU CAN SEE BY THE OPEN SOURCE CODE AND THE MODULES DOWN BELOW!!! PLEASE FUCKING READ!!!</bold>
+<h1>Lethal Sex</h1>
 
-<img src="https://github.com/IgnoredSoul/LethalSex/assets/61690983/f5beeeb1-cd97-40b9-a2be-c36ed468c2ee"/>
+<p>All Lethal Company mods I've made</p>
+
+<img src="https://github.com/IgnoredSoul/LethalSex/assets/61690983/f5beeeb1-cd97-40b9-a2be-c36ed468c2ee" width=40.3%/>
 <img src="https://github.com/IgnoredSoul/LethalSex/assets/61690983/a3ca1827-391e-4cf3-a7f7-a49a5fc3a2ab" width=41%/>
+
 </div>
-    
-## Advanced HUD:
-- Voice
-    - Three icons to indicate your voice level (None, Low, High).
-    - Pressing your push-to-talk key on open mic will mute your mic, and vice versa.
-- Stats
-    - Added HP text :)
 
-## Nervous Around Dogs: ~~*(I cant think of a good name)*~~
-- When the player is near a dog, in-game mic settings are forced to be open and unmuted, ensuring dogs always hear you. ~~*(If you mute your actual mic, then you're a fucking pussy)*~~
+## Table of Contents
 
-- Settings will be restored when the player is not near the dog.
+- [LethalSex-Core](#lethalsex-core)
+- [LethalSanity](#lethalsanity)
+- [License](#license)
 
-## Schizophrenia:
-### Insanity levels:
-- When player has reached insanity of 20:
-    - You will start to hear distant noises
-    - Your vision will become a little grainer
-    - Your vision will narrow
+## LethalSex-Core
 
-- When player has reached insanity of 38:
-    - You will start to hear more noises more often
-    - Your vision becomes more unstable causing chromatic aberration and lens distortion
+LethalSex-Core is a core dependency used for other mods in this repository. It enables easier creation of new mods and provides better event handling. This mod is required for all other mods and includes a developer menu and console, which can be activated in the configuration.
 
-- When player has reached insanity of 50:
-    - The noises... wont stop... they're in your walls...
-    - Your vision is basically useless now. You need to go to specsavers mate.
+## LethalSanity
 
-## Scared Doors:
-- When walking through a door, the door has a 10% chance to play the sound of the door slamming shut after (0.85s - 2.56s).
-    - 1% chance it will actually close but only for you.
-- If the player re-enteres through the door before the timer is done, task will be stopped and will again have a 10% chance to slam
+LethalSanity extends the Insanity system inside the game, using it against the player. As your insanity grows, stranger things happen to you both visually and aurally. Your vision becomes increasingly impaired, with distorted visuals and hallucinations. The mod introduces auditory hallucinations, such as eerie sounds and voices, and there's even a chance of encountering hallucinated creatures that aren't really there. Embrace the challenge of maintaining your sanity as you navigate through the factory.
 
-## Future plans
-- Sniff my balls
+<details>
+  <summary><strong>More Details</strong></summary>
+
+  <p>
+    LethalSanity takes the Insanity system to new heights, providing a deeply immersive and "slightly scary" experience for players. As you delve deeper into madness, the game environment becomes increasingly surreal, with visual distortions and auditory hallucinations that keep you on edge. 
+  </p>
+
+<details>
+  <summary><strong>Even More Details</strong> (actual spoilers)</summary>
+
+Currently there is only visual effects (post processing) cause I am too stupid to add monsters right now and too much of a perfectionist when it comes to the audio handler... oopsies :3
+
+</details>
+</details>
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

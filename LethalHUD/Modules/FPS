@@ -1,0 +1,66 @@
+﻿using LethalSex_Core;
+using System.Threading.Tasks;
+using TMPro;
+using UnityEngine;
+
+namespace LethalHUD.Modules
+{
+    internal class FPS : LethalClass
+    {
+        public override async void HUDManager_Awake()
+        {
+            if (!Config.ToggleFPSValue) return;
+
+            (await LocalPlayer.PlayerAsync())?.GetOrAddComponent<FPS>();
+
+            Instance = this;
+        }
+
+        private float _timer;
+        private TextMeshProUGUI FPSMPro { get; set; }
+        private GameObject FPSObj { get; set; }
+        public static FPS Instance { get; private set; }
+
+        private async void Awake()
+        {
+            // Wait till WeightUI exists and clone it.
+            do
+            {
+                FPSObj = Instantiate(
+                    GameObject.Find("Systems/UI/Canvas/IngamePlayerHUD/TopLeftCorner/WeightUI"),
+                    GameObject.Find("Systems/UI/Canvas/IngamePlayerHUD/TopLeftCorner/WeightUI").transform.parent
+                );
+
+                await Task.Delay(500);
+            } while (!FPSObj);
+
+            // Set objects name
+            FPSObj.name = "LS-FPSUI";
+
+            // Set the position to be above the weight
+            FPSObj.transform.localPosition += new Vector3(0, -15, 0);
+
+            // Assign internal ref to this component
+            FPSMPro = FPSObj.GetComponentInChildren<TextMeshProUGUI>();
+
+            // Set objects name
+            FPSObj.GetComponentInChildren<TextMeshProUGUI>().gameObject.name = "LS-FPS";
+        }
+
+        private void Update()
+        {
+            if (FPSMPro && Time.unscaledTime > _timer)
+            {
+                FPSMPro.text = $"{(int)(1f / Time.unscaledDeltaTime)} •";
+
+                _timer = (Time.unscaledTime + 1);
+            }
+        }
+
+        private void OnDestroy() => base.Destroyed();
+
+        private void OnDisable() => base.Disabled();
+
+        private void OnEnable() => base.Enabled();
+    }
+}
