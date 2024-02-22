@@ -400,3 +400,10 @@ FodyWeavers.xsd
 *.csproj
 /Resources
 /Properties
+/LethalHUD/Resources
+/LethalSanity/Properties
+/LethalSanity/Resources
+/LethalSex-Core/Properties
+/LethalSex-Core/Resources
+/Refs
+/LethalHUD/Properties
