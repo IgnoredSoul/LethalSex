@@ -12,7 +12,7 @@ namespace LethalSex_Core
     [HarmonyPatch]
     public abstract class LethalClass : MonoBehaviour
     {
-        private static List<LethalClass> LethalClasses = new List<LethalClass>();
+        protected static List<LethalClass> LethalClasses = new List<LethalClass>();
 
         internal static void Patch()
         {
@@ -24,10 +24,13 @@ namespace LethalSex_Core
                     LethalClasses.AddRange(a.GetTypes().Where(type => type.IsSubclassOf(typeof(LethalClass))).Select(type => (LethalClass)Activator.CreateInstance(type)));
 
                 ConsoleManager.Log($"Lethal Classes: [{string.Join(", ", LethalClasses.ToList().Select(obj => obj.GetType().Name))}]", "Init", Color.magenta);
-
-                Main.mls.LogMessage($"Lethal Classes: [{string.Join(", ", LethalClasses.ToList().Select(obj => obj.GetType().Name))}]");
             }
             catch (Exception ex) { ConsoleManager.Log($"Error getting every SubClass?;\n{ex}", "Err", Color.red); }
+        }
+
+        private void Update()
+        {
+            if (LocalPlayer.PlayerController && LocalPlayer.PlayerController.isPlayerDead) _handle_OnPlayerDie();
         }
 
         /// <summary>
@@ -44,100 +47,137 @@ namespace LethalSex_Core
 
         [HarmonyPatch(typeof(HUDManager), "Start")]
         [HarmonyPostfix]
-        private static void _handle_HUD_Start()
+        private static void _handle_OnHUDStart()
         {
             LethalClasses.ForEach(async c =>
             {
                 try
                 {
                     // Call for HUDManager Start
-                    c?.HUD_Start();
+                    c?.OnHUDStart();
                 }
-                catch (Exception e) { Main.mls.LogFatal($"Error calling HUD_Start;\n{e}\n"); }
+                catch (Exception e) { ConsoleManager.Log($"Error calling OnHUDStart;\n{e}\n", "Err", Color.red); }
 
                 try
                 {
                     // Call LocalPlayer Start
-                    c?.LocalPlayer_Start(await LocalPlayer.PlayerControllerAsync());
+                    c?.OnLocalPlayerStart(await LocalPlayer.PlayerControllerAsync());
                 }
-                catch (Exception e) { Main.mls.LogFatal($"Error calling LocalPlayer_Start;\n{e}\n"); }
+                catch (Exception e) { ConsoleManager.Log($"Error calling OnLocalPlayerStart;\n{e}\n", "Err", Color.red); }
             });
         }
 
         [HarmonyPatch(typeof(HUDManager), "Awake")]
         [HarmonyPostfix]
-        private static void _handle_HUD_Awake()
+        private static void _handle_ONHUDAwake()
         {
             LethalClasses.ForEach(c =>
             {
                 try
                 {
                     // Call HUDManager Awake
-                    c?.HUD_Awake();
+                    c?.OnHUDAwake();
                 }
-                catch (Exception e) { Main.mls.LogFatal($"Error calling HUD_Awake;\n{e}\n"); }
+                catch (Exception e) { ConsoleManager.Log($"Error calling OnHUDAwake;\n{e}\n", "Err", Color.red); }
             });
         }
 
         [HarmonyPatch(typeof(HUDManager), "Update")]
         [HarmonyPostfix]
-        private static void _handle_HUD_Update()
+        private static void _handle_OnHUDUpdate()
         {
             LethalClasses.ForEach(c =>
             {
                 try
                 {
                     // Call for HUDManager Update
-                    c?.HUD_Update();
+                    c?.OnHUDUpdate();
                 }
-                catch (Exception e) { Main.mls.LogFatal($"Error calling HUD_Update;\n{e}\n"); }
+                catch (Exception e) { ConsoleManager.Log($"Error calling OnHUDUpdate;\n{e}\n", "Err", Color.red); }
             });
         }
 
         [HarmonyPatch(typeof(StartOfRound), "Start")]
         [HarmonyPostfix]
-        private static void _handle_Lobby_Start()
+        private static void _handle_OnLobbyStart()
         {
             LethalClasses.ForEach(c =>
             {
                 try
                 {
                     // Call for StartOfRound Start
-                    c?.Lobby_Start();
+                    c?.OnLobbyStart();
                 }
-                catch (Exception e) { Main.mls.LogFatal($"Error calling Lobby_Start;\n{e}\n"); }
+                catch (Exception e) { ConsoleManager.Log($"Error calling OnLobbyStart;\n{e}\n", "Err", Color.red); }
             });
         }
 
         [HarmonyPatch(typeof(StartOfRound), "Awake")]
         [HarmonyPostfix]
-        private static void _handle_Lobby_Awake()
+        private static void _handle_OnLobbyAwake()
         {
             LethalClasses.ForEach(c =>
             {
                 try
                 {
                     // Call for StartOfRound Awake
-                    c?.Lobby_Awake();
+                    c?.OnLobbyAwake();
                 }
-                catch (Exception e) { Main.mls.LogFatal($"Error calling Lobby_Awake\n{e}\n"); }
+                catch (Exception e) { ConsoleManager.Log($"Error calling OnLobbyAwake\n{e}\n", "Err", Color.red); }
             });
         }
 
-        //[HarmonyPatch(typeof(DevMenuManager), "Start")]
+        [HarmonyPatch(typeof(PlayerControllerB), "BeginGrabObject")]
+        [HarmonyPrefix]
+        private static void _handle_OnGrabObject()
+        {
+            LethalClasses.ForEach(c =>
+            {
+                try
+                {
+                    Ray interactRay = new Ray(LocalPlayer.PlayerController.gameplayCamera.transform.position, LocalPlayer.PlayerController.gameplayCamera.transform.forward);
+
+                    RaycastHit hit;
+
+                    Physics.Raycast(interactRay, out hit, LocalPlayer.PlayerController.grabDistance, 832);
+
+                    if (hit.collider?.transform.gameObject?.GetComponent<GrabbableObject>() == null) return;
+
+                    c?.OnGrabObject(hit.collider.transform.gameObject.GetComponent<GrabbableObject>());
+                }
+                catch (Exception e) { ConsoleManager.Log($"Error calling OnGrabObject\n{e}\n", "Err", Color.red); }
+            });
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), "OnShipLandedMiscEvents")]
+        [HarmonyPostfix]
+        private static void _handle_OnShipLand()
+        {
+            LethalClasses.ForEach(c =>
+            {
+                try
+                {
+                    // Call for OnShipLand Awake
+                    c?.OnShipLand();
+                }
+                catch (Exception e) { ConsoleManager.Log($"Error calling OnShipLand\n{e}\n", "Err", Color.red); }
+            });
+        }
+
+        //[HarmonyPatch(typeof(PlayerControllerB), "isPlayerDead")]
         //[HarmonyPostfix]
-        //private static void _handle_DevMenu_Start()
-        //{
-        //    LethalClasses.ForEach(c =>
-        //    {
-        //        try
-        //        {
-        //            // Call for StartOfRound Awake
-        //            c?.DevMenu_Start();
-        //        }
-        //        catch (Exception e) { Main.mls.LogFatal($"Error calling DevMenu_Start\n{e}\n"); }
-        //    });
-        //}
+        private static void _handle_OnPlayerDie()
+        {
+            LethalClasses.ForEach(c =>
+            {
+                try
+                {
+                    // Call for OnShipLand Awake
+                    c?.OnPlayerDie();
+                }
+                catch (Exception e) { ConsoleManager.Log($"Error calling OnPlayerDie\n{e}\n", "Err", Color.red); }
+            });
+        }
 
         #endregion =====================[ Patches ]=====================
 
@@ -151,7 +191,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Start.html"/> for the official Unity API documentation
         /// </summary>
-        public virtual void HUD_Start()
+        public virtual void OnHUDStart()
         { }
 
         /// <summary>
@@ -163,7 +203,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html"/> for the official Unity API documentation
         /// </summary>
-        public virtual void HUD_Awake()
+        public virtual void OnHUDAwake()
         { }
 
         /// <summary>
@@ -175,7 +215,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html"/> for the official Unity API documentation
         /// </summary>
-        public virtual void HUD_Update()
+        public virtual void OnHUDUpdate()
         { }
 
         /// <summary>
@@ -186,7 +226,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Start.html"/> for the official Unity API documentation
         /// </summary>
-        public virtual void Lobby_Start()
+        public virtual void OnLobbyStart()
         { }
 
         /// <summary>
@@ -198,7 +238,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html"/> for the official Unity API documentation
         /// </summary>
-        public virtual void Lobby_Awake()
+        public virtual void OnLobbyAwake()
         { }
 
         /// <summary>
@@ -209,10 +249,40 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <seealso cref="PlayerControllerB"/> for more info
         /// </summary>
-        public virtual void LocalPlayer_Start(PlayerControllerB LocalPlayer)
+        public virtual void OnLocalPlayerStart(PlayerControllerB LocalPlayer)
         { }
 
-        public virtual void DevMenu_Start()
+        /// <summary>
+        /// Method called when the local player (<seealso cref="PlayerControllerB"/>) starts to grab an object.
+        /// <br/>
+        /// This method can be overridden in derived classes to perform specific actions
+        /// to the (<seealso cref="PlayerControllerB"/>) BeginGrabObject method.
+        /// <br/><br/>
+        /// See: <seealso cref="PlayerControllerB"/> for more info
+        /// </summary>
+        public virtual void OnGrabObject(GrabbableObject obj)
+        { }
+
+        /// <summary>
+        /// Method called when the local player (<seealso cref="StartOfRound"/>) 'OnShipLandedMiscEvents' is called.
+        /// <br/>
+        /// This method can be overridden in derived classes to perform specific actions
+        /// to the (<seealso cref="StartOfRound"/>) 'OnShipLandedMiscEvents' method.
+        /// <br/><br/>
+        /// See: <seealso cref="StartOfRound"/> for more info
+        /// </summary>
+        public virtual void OnShipLand()
+        { }
+
+        /// <summary>
+        /// Method called when the local player (<seealso cref="PlayerControllerB"/>) fucking dies.
+        /// <br/>
+        /// This method can be overridden in derived classes to perform specific actions
+        /// to the (<seealso cref="PlayerControllerB"/>) 'isPlayerDead' field.
+        /// <br/><br/>
+        /// See: <seealso cref="PlayerControllerB"/> for more info
+        /// </summary>
+        public virtual void OnPlayerDie()
         { }
 
         #endregion ==================[ Virtual Voids ]==================

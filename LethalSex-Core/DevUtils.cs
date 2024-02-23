@@ -1,5 +1,4 @@
-﻿using GameNetcodeStuff;
-using System;
+﻿using System;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -14,7 +13,7 @@ namespace LethalSex_Core
         /// <summary>
         /// Load console object if not already loaded into scene
         /// </summary>
-        public override void HUD_Awake()
+        public override void OnHUDAwake()
         {
             // If console already exists or ToggleDebugConsole is disabled, exit.
             if (ConsoleObject || !Config.ToggleDebugConsole) return;
@@ -40,7 +39,7 @@ namespace LethalSex_Core
         /// </summary>
         private void Update()
         {
-            if (Keyboard.current.f10Key.wasPressedThisFrame)
+            if (Keyboard.current.f10Key.wasPressedThisFrame && ConsoleObject)
                 ConsoleObject?.transform.GetChild(0).gameObject.SetActive(!ConsoleObject.transform.GetChild(0).gameObject.activeInHierarchy);
         }
 
@@ -103,18 +102,18 @@ namespace LethalSex_Core
         /// <param name="color"></param>
         public static void Log(object msg, object prefix, Color color)
         {
-            _consoleTextBuffer.Append($"[{DateTimeOffset.Now.ToString("hh:mm:ss:ff")}] [{WIC($"{prefix}", CTH(color))}] ~> {msg}\n");
-            if (ConsoleText && ConsoleScroll)
-                ConsoleText.text = _consoleTextBuffer.ToString();
-            else if (!ConsoleText) Main.mls.LogFatal("ConsoleText Is Missing?!");
-            else if (!ConsoleScroll) Main.mls.LogFatal("ConsoleScroll Is Missing?!");
-            else Main.mls.LogFatal("UHHHHHHHHHHHHHHH!?");
+            if (ConsoleObject)
+            {
+                _consoleTextBuffer.Append($"[{DateTimeOffset.Now.ToString("hh:mm:ss:ff")}] [{WIC($"{prefix}", CTH(color))}] ~> {msg}\n");
+                if (ConsoleText && ConsoleScroll)
+                    ConsoleText.text = _consoleTextBuffer.ToString();
+            }
         }
     }
 
     public class DevMenuManager : LethalClass
     {
-        public override void HUD_Awake()
+        public override void OnHUDAwake()
         {
             // If console already exists or ToggleDebugConsole is disabled, exit.
             if (DevMenuObject || !Config.ToggleDevMenu) return;

@@ -16,7 +16,8 @@ namespace LethalSex_Core
             config = new ConfigFile(Path.Combine(Paths.ConfigPath, "LethalSexCore.cfg"), true);
 
             ToggleDebugConsole = config.Bind("Console", "Toggle debug console", false, "Allow the console to be toggled on and off? (F10)").Value;
-            ToggleDevMenu = config.Bind("Menu", "Toggle dev menue", false, "Allow the console to be toggled on and off? (F11)").Value;
+
+            ToggleDevMenu = config.Bind("Menu", "Toggle dev menu", false, "Allow the console to be toggled on and off? (F11)").Value;
         }
     }
 }

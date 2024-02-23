@@ -2,7 +2,6 @@
 using LethalSex_Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static LethalSex_Core.DevMenuManager;
 
 namespace LethalSanity.Modules
 {
@@ -10,16 +9,10 @@ namespace LethalSanity.Modules
     {
         public static Leaning instance { get; private set; }
 
-        public override void LocalPlayer_Start(PlayerControllerB _LocalPlayer) => instance = LocalPlayer.Camera.gameObject.GetOrAddComponent<Leaning>();
-
-        public float maxLeanAngle = 35f; // Maximum angle to lean
-        public float threshold = 35f; // Mouse speed to lean
-
-        private void Start()
+        public override void OnLocalPlayerStart(PlayerControllerB _LocalPlayer)
         {
-            DMSection sect = new("Eh");
-
-            new DMSlider(sect, (v) => LocalPlayer.Insanity = v, 0, 65, false, "Insanity");
+            if (!Config.ToggleLeanModule) return;
+            instance = LocalPlayer.Camera.gameObject.GetOrAddComponent<Leaning>();
         }
 
         private void Update()
@@ -32,8 +25,8 @@ namespace LethalSanity.Modules
             // Read mouse input
             Vector2 mouseDelta = Mouse.current.delta.ReadValue();
 
-            // If the menu isnt open and the mouse is moving past the threshold
-            if (!LocalPlayer.PlayerController.quickMenuManager.isMenuOpen && (mouseDelta.x >= threshold || mouseDelta.x <= -threshold))
+            // If the menu or terminal isnt open and the mouse is moving past the threshold
+            if ((!LocalPlayer.IsMenuOpen && !LocalPlayer.IsTermOpen) && (mouseDelta.x >= Config.threshold || mouseDelta.x <= -Config.threshold))
             {
                 float LeanMultiplier = 0.05f;
 
@@ -47,7 +40,7 @@ namespace LethalSanity.Modules
                 if (LocalPlayer.Insanity >= 60f) LeanMultiplier += 0.05f;
 
                 // Calculate the amount of lean based on the mouse movement and apply the lean in the direction of movement
-                curRot.z += Mathf.Clamp((mouseDelta.x * LeanMultiplier), -maxLeanAngle, maxLeanAngle);
+                curRot.z += Mathf.Clamp(((mouseDelta.x - Config.threshold) * LeanMultiplier), -Config.maxLeanAngle, Config.maxLeanAngle);
             }
             else
             {

@@ -338,5 +338,21 @@ namespace LethalSex_Core
 
             return cam;
         }
+
+        public static bool IsNearOtherPlayers => PlayersNearMe().Length > 0;
+
+        public static PlayerControllerB[] PlayersNearMe(float rad = 10f)
+        {
+            PlayerControllerB[] l = null;
+
+            foreach (PlayerControllerB player in Resources.FindObjectsOfTypeAll<PlayerControllerB>())
+                if (Vector3.Distance(player.transform.position, Player.transform.position) <= rad)
+                    l[l.Length] = player;
+
+            return l;
+        }
+
+        public static bool IsMenuOpen => PlayerController.quickMenuManager.isMenuOpen;
+        public static bool IsTermOpen => PlayerController.inTerminalMenu;
     }
 }

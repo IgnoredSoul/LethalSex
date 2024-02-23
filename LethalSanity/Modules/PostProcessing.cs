@@ -12,7 +12,7 @@ namespace LethalSanity.Modules
         internal static PostProcessing instance { get; private set; }
 
         // When the player loads
-        public override void LocalPlayer_Start(PlayerControllerB LocalPlayer) => instance = LocalPlayer.gameObject.GetOrAddComponent<PostProcessing>();
+        public override void OnLocalPlayerStart(PlayerControllerB LocalPlayer) => instance = LocalPlayer.gameObject.GetOrAddComponent<PostProcessing>();
 
         private ColorAdjustments CAComp { get; set; }
         private ChromaticAberration ChrAbComp { get; set; }

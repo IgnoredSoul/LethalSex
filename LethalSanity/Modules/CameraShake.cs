@@ -10,7 +10,7 @@ namespace LethalSanity.Modules
     {
         internal static CameraShake instance { get; private set; }
 
-        public override void LocalPlayer_Start(PlayerControllerB _LocalPlayer) => instance = LocalPlayer.Camera.gameObject.GetOrAddComponent<CameraShake>();
+        public override void OnLocalPlayerStart(PlayerControllerB _LocalPlayer) => instance = LocalPlayer.Camera.gameObject.GetOrAddComponent<CameraShake>();
 
         internal float wobbleAmount { get; set; }
         private Coroutine wobbleCoro { get; set; }
