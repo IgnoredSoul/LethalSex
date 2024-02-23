@@ -33,7 +33,7 @@ LethalSanity extends the Insanity system inside the game, using it against the p
 <details>
   <summary><strong>Even More Details</strong> (actual spoilers)</summary>
 
-Currently there is only visual effects (post processing) cause I am too stupid to add monsters right now and too much of a perfectionist when it comes to the audio handler... oopsies :3
+Currently there is visual effects (post processing) and "new" scrap. I am too stupid to add monsters right now and too much of a perfectionist when it comes to the audio handler... oopsies :3
 
 </details>
 </details>
