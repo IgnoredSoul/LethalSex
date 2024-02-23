@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1>Lethal Sex</h1>
+# [Lethal Sex](https://discord.gg/Gu96JVv93V)
 
 <p>All Lethal Company mods I've made</p>
 
