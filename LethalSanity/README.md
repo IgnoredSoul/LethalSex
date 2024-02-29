@@ -2,6 +2,7 @@
 
 ## 1.3.1
 - Added config for every module, able to toggle or change different value.
+- Added an extra multiplier for the CameraLeaning module.
 
 ## 1.3.0 - The "InsanityRemastered Reimagined" Update >:3
 - Fake scrap will spawn around the player at random intervals. Picking the scrap up can cause random effects.

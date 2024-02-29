@@ -1,5 +1,7 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using LethalSanity.Modules;
+using LethalSex_Core;
 using UnityEngine;
 
 namespace LethalSanity
