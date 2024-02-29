@@ -115,6 +115,13 @@ namespace LethalSex_Core
     /// </summary>
     public static class Extensions
     {
+        /// <summary>
+        /// Get or add component
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="gameObject"></param>
+        /// <param name="Log"></param>
+        /// <returns>Component (T)</returns>
         public static T GetOrAddComponent<T>(this GameObject gameObject, bool Log = false) where T : Component
         {
             T component = gameObject.GetComponent<T>();
@@ -128,6 +135,71 @@ namespace LethalSex_Core
             return component;
         }
 
+        /// <summary>
+        /// Try and destroy gameObject
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns>True if it destroyed gameObject or not</returns>
+        public static bool TryDestroy(this GameObject o)
+        {
+            bool result;
+            try
+            {
+                UnityEngine.Object.Destroy(o);
+                result = true;
+            }
+            catch
+            {
+                result = false;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Try and destroy gameObject
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns>True if it destroyed gameObject or not</returns>
+        public static bool TryDestroy(this Transform o)
+        {
+            bool result;
+            try
+            {
+                UnityEngine.Object.Destroy(o);
+                result = true;
+            }
+            catch
+            {
+                result = false;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Try and destroy component
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns>True if it destroyed component or not</returns>
+        public static bool TryDestroy(this Component o)
+        {
+            bool result;
+            try
+            {
+                UnityEngine.Object.Destroy(o);
+                result = true;
+            }
+            catch
+            {
+                result = false;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Get object path of gameObject.
+        /// </summary>
+        /// <param name="transform"></param>
+        /// <returns>Path to gameObject</returns>
         public static string GetObjPath(this Transform transform)
         {
             string path = transform.name;
@@ -144,6 +216,14 @@ namespace LethalSex_Core
         /// </summary>
         private static Dictionary<string, CancellationTokenSource> ctsDict = new Dictionary<string, CancellationTokenSource>();
 
+        /// <summary>
+        /// Smoothy change a value to another value using tasks. The previous task will stop and restart with new values when same task name is started
+        /// </summary>
+        /// <param name="ActionName"></param>
+        /// <param name="action"></param>
+        /// <param name="start"></param>
+        /// <param name="target"></param>
+        /// <param name="duration"></param>
         public static async void SmoothIncrementValue(string ActionName, Action<float> action, float start, float target, float duration)
         {
             // Cancel the task if it's already running
