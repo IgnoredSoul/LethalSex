@@ -10,26 +10,49 @@ namespace LethalSanity.Modules
 {
     internal class StalkerHallucination : LethalClass
     {
-        public override void OnShipLand()
+        public static StalkerHallucination Module { get; private set; }
+
+        /// <summary>
+        /// Assign Module to this instance.
+        /// </summary>
+/*        protected override void OnRegister()
         {
-            if (!Config.SH_ToggleStalker) return;
+            // Unregister this module if disabled in the config.
+            if (!Config.SH_ToggleModule) { ManualUnregister(); return; }
+
+            base.OnRegister();
+            Module = this;
+        }*/
+
+        /// <summary>
+        /// If the module unregisters, unload everything.
+        /// </summary>
+        protected override void Unregister()
+        {
+            // Try to destroy the object, if it cannot doesn't matter cause it doesnt exist lol.
+            Extensions.TryDestroy(stalker);
+
+            base.Unregister();
+            Module = null;
+        }
+
+        protected override void OnShipLand()
+        {
             stalker = Instantiate(Resources.FindObjectsOfTypeAll<FlowermanAI>()[0].gameObject);
             Destroy(stalker.GetComponent<FlowermanAI>());
             stalker.AddComponent<StalkerHallucination>();
         }
 
-        public static StalkerHallucination instance { get; private set; }
-
         private NavMeshAgent agent { get; set; }
 
         private GameObject[] aiNodes { get; set; }
-        private bool runningAway { get; set; }
+        internal bool runningAway { get; set; }
 
         public GameObject stalker { get; private set; }
         private Transform turnCompass { get; set; }
 
-        private Animator animator { get; set; }
-        private Vector3 previousPosition { get; set; }
+        internal Animator animator { get; set; }
+        internal Vector3 previousPosition { get; set; }
 
         private void Start()
         {
@@ -41,7 +64,6 @@ namespace LethalSanity.Modules
             transform.position = aiNodes[NumberUtils.NextL(aiNodes.Length)].transform.position;
             animator = gameObject.GetComponentInChildren<Animator>();
             turnCompass = gameObject.transform.Find("FlowermanModel/TurnCompass");
-            instance = this;
         }
 
         private Vector3 ChooseFarthestNodeFromPosition()
@@ -57,13 +79,13 @@ namespace LethalSanity.Modules
             return a.Count > 0 ? a[NumberUtils.Next(a.Count)].transform.position : Vector3.zero;
         }
 
-        private void LookAt()
+        internal void LookAt()
         {
             turnCompass.LookAt(LocalPlayer.PlayerController.gameplayCamera.transform.position);
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(new Vector3(0f, turnCompass.eulerAngles.y, 0f)), 30f * Time.deltaTime);
         }
 
-        private void FollowPlayer()
+        internal void FollowPlayer()
         {
             try
             {
@@ -76,41 +98,17 @@ namespace LethalSanity.Modules
             }
         }
 
-        private void RunAway()
+        internal void RunAway()
         {
             agent.SetDestination(ChooseFarthestNodeFromPosition());
         }
 
-        private IEnumerator EvadeTimer()
+        internal IEnumerator EvadeTimer()
         {
             this.runningAway = true;
             yield return new WaitForSecondsRealtime(NumberUtils.Next(Config.SH_StalkDelay - 3f, Config.SH_StalkDelay + 3f));
             this.runningAway = false;
             yield break;
-        }
-
-        public void Update()
-        {
-            LookAt();
-            if (LocalPlayer.PlayerController.HasLineOfSightToPosition(base.transform.position + Vector3.up * 0.5f, 30f, 60, -1f))
-            {
-                animator.SetBool("anger", true);
-                animator.SetBool("sneak", false);
-                animator.SetFloat("speedMultiplier", Vector3.ClampMagnitude(transform.position - previousPosition, 1f).sqrMagnitude / (Time.deltaTime * 2f));
-                RunAway();
-                if (!runningAway)
-                {
-                    StartCoroutine(EvadeTimer());
-                }
-            }
-            else if (!runningAway)
-            {
-                animator.SetBool("anger", false);
-                animator.SetBool("sneak", true);
-                FollowPlayer();
-                animator.SetFloat("speedMultiplier", Vector3.ClampMagnitude(transform.position - previousPosition, 1f).sqrMagnitude / (Time.deltaTime * 4f));
-            }
-            previousPosition = transform.position;
         }
 
         private void OnDestroy() => base.Destroyed();

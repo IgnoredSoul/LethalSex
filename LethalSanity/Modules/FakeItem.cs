@@ -7,10 +7,38 @@ namespace LethalSanity.Modules
 {
     internal class FakeItem : LethalClass
     {
-        // When the ship lands, make new gameobject and add component
-        public override void OnShipLand()
+        public static FakeItem Module { get; private set; } = null!;
+
+        /// <summary>
+        /// Assign Module to this instance.
+        /// </summary>
+/*        protected override void OnRegister()
         {
-            FakeItemHandler = new GameObject("FakeItemHandler");
+            // Unregister this module if disabled in the config.
+            if (!Config.FI_ToggleModule) { ManualUnregister(); return; }
+
+            base.OnRegister();
+            Module = this;
+        }*/
+
+        /// <summary>
+        /// If the module unregisters, unload everything.
+        /// </summary>
+        protected override void Unregister()
+        {
+            // Try to destroy the object, if it cannot doesn't matter cause it doesnt exist lol.
+            Extensions.TryDestroy(FakeItemHandler);
+
+            base.Unregister();
+            Module = null;
+        }
+
+        /// <summary>
+        /// When the ship lands, make new gameobject and add component
+        /// </summary>
+        protected override void OnShipLand()
+        {
+            FakeItemHandler = new GameObject("LS-FakeItemHandler");
             FakeItemHandler.AddComponent<FakeItem>();
         }
 
@@ -20,26 +48,56 @@ namespace LethalSanity.Modules
         // Start coroutinue
         private void Start() => StartCoroutine(HandleItem());
 
-        // Do loop shit
+        /// <summary>
+        /// Handle fake item spawning and item spawn delay
+        /// </summary>
+        /// <returns></returns>
         private IEnumerator HandleItem()
         {
-            while (true)
+            // Wait till the player is inside the factory
+            if (!LocalPlayer.PlayerController.isInsideFactory) yield return null;
+
+            // Wait for (CONFIG.SPAWNDELAY ± rnd(5)) seconds
+            yield return new WaitForSeconds(NumberUtils.Next(Mathf.Max(0, Config.FI_SpawnDelay - NumberUtils.Next(5)), Mathf.Max(0, Config.FI_SpawnDelay + NumberUtils.Next(5))));
+
+            // If respawning enabled
+            if (Config.FI_RespawnDelay)
             {
-                // If the player is inside the factory
-                if (LocalPlayer.PlayerController.isInsideFactory)
+                while (true)
                 {
-                    // Spawn new objects
-                    SpawnNewFakes();
+                    // If the player is inside the factory just in case
+                    if (LocalPlayer.PlayerController.isInsideFactory)
+                    {
+                        // Spawn new objects
+                        SpawnNewFakes();
 
-                    // Wait for 30 - 70 seconds
-                    yield return new WaitForSeconds(NumberUtils.Next(30, 70));
+                        // Wait for (CONFIG.SPAWNDELAY ± rnd(5)) seconds
+                        yield return new WaitForSeconds(NumberUtils.Next(Mathf.Max(0, Config.FI_SpawnDelay - NumberUtils.Next(5)), Mathf.Max(0, Config.FI_SpawnDelay + NumberUtils.Next(5))));
 
-                    // Delete fakes
-                    foreach (GameObject fake in Fakes) Destroy(fake);
+                        // Delete fakes
+                        foreach (GameObject fake in Fakes) Destroy(fake);
+                    }
+
+                    // Loop
+                    yield return null;
                 }
+            }
+            else
+            {
+                while (true)
+                {
+                    // If the player is inside the factory just in case
+                    if (LocalPlayer.PlayerController.isInsideFactory)
+                    {
+                        // Spawn new objects
+                        SpawnNewFakes();
 
-                // Loop
-                yield return null;
+                        yield break;
+                    }
+
+                    // Loop
+                    yield return null;
+                }
             }
         }
 
@@ -69,7 +127,7 @@ namespace LethalSanity.Modules
         }
 
         // When the object is grabbed
-        public override void OnGrabObject(GrabbableObject obj)
+        protected override void OnGrabObject(GrabbableObject obj)
         {
             // Check if item is an fake
             ConsoleManager.Log(obj.name.StartsWith("Fake"));
@@ -87,7 +145,7 @@ namespace LethalSanity.Modules
         }
 
         // When the player dies. Destroy gameobject
-        public override void OnPlayerDie() => Destroy(FakeItemHandler);
+        protected override void OnPlayerDie() => Destroy(FakeItemHandler);
 
         private void OnDestroy() => base.Destroyed();
 

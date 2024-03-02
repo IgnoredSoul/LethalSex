@@ -8,16 +8,33 @@ namespace LethalSanity.Modules
 {
     internal class CameraShake : LethalClass
     {
+        public static CameraShake Module { get; private set; } = null!;
+
         /// <summary>
-        /// CameraShake component instance
+        /// Assign Module to this instance.
         /// </summary>
-        internal static CameraShake instance { get; private set; }
+/*        protected override void OnRegister()
+        {
+            // Unregister this module if disabled in the config.
+            if (!Config.CS_ToggleModule) { ManualUnregister(); return; }
+
+            base.OnRegister();
+            Module = this;
+        }*/
+
+        protected override void OnUnregister()
+        {
+            Extensions.TryDestroy(LocalPlayer.Camera.gameObject.GetComponent<CameraShake>());
+
+            base.OnUnregister();
+            Module = null;
+        }
 
         /// <summary>
         /// When the local player component is initiated, assign and create a new instance of the component onto the camera
         /// </summary>
         /// <param name="_LocalPlayer"></param>
-        public override void OnLocalPlayerStart(PlayerControllerB _LocalPlayer) => instance = LocalPlayer.Camera.gameObject.GetOrAddComponent<CameraShake>();
+        protected override void OnLocalPlayerStart(PlayerControllerB _LocalPlayer) => LocalPlayer.Camera.gameObject.GetOrAddComponent<CameraShake>();
 
         /// <summary>
         /// How much the camera should wobble. (Low floats)
@@ -59,11 +76,5 @@ namespace LethalSanity.Modules
                 transform.localPosition = new Vector3(0, 0, 0);
             }
         }
-
-        private void OnDestroy() => base.Destroyed();
-
-        private void OnDisable() => base.Disabled();
-
-        private void OnEnable() => base.Enabled();
     }
 }

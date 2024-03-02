@@ -1,7 +1,8 @@
 ﻿# Updates
 
-## 1.2.1
+## 2.0.0
 - Added more extenions.
+- Complete rewrite of the "lethalclass" class, old one was kind off pissing me off.
 
 ## 1.2.0
 - Added override "OnGrabObject".

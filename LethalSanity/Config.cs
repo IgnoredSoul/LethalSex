@@ -1,23 +1,40 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using System.IO;
+using UnityEngine;
 
 namespace LethalSanity
 {
     internal class Config
     {
-        private static ConfigFile config { get; set; }
+        private ConfigFile config { get; set; }
+        private ConfigFile dconfig { get; set; }
+
+        public Config()
+        {
+            Init();
+            Init_Danger();
+        }
+
+        #region Insanity Options
+
+        internal static float IO_MaxInsanity { get; private set; }
+
+        #endregion Insanity Options
 
         #region Post processing
 
-        internal static bool PP_TogglePost { get; private set; }
+        internal static bool PP_ToggleModule { get; private set; }
         internal static int PP_PostPriority { get; private set; }
+        internal static float PP_Level1 { get; private set; }
+        internal static float PP_Level2 { get; private set; }
+        internal static float PP_Level3 { get; private set; }
 
         #endregion Post processing
 
         #region Camera Leaning
 
-        internal static bool CL_ToggleLeanModule { get; private set; }
+        internal static bool CL_ToggleModule { get; private set; }
         internal static float CL_maxLeanAngle { get; private set; }
         internal static float CL_threshold { get; private set; }
 
@@ -25,7 +42,7 @@ namespace LethalSanity
 
         #region Fake Items
 
-        internal static bool FI_ToggleFakeItem { get; private set; }
+        internal static bool FI_ToggleModule { get; private set; }
         internal static int FI_MinItems { get; private set; }
         internal static int FI_MaxItems { get; private set; }
         internal static bool FI_RespawnDelay { get; private set; }
@@ -35,40 +52,60 @@ namespace LethalSanity
 
         #region Camera Shake
 
-        internal static bool CS_ToggleCamShake { get; private set; }
+        internal static bool CS_ToggleModule { get; private set; }
 
         #endregion Camera Shake
 
         #region Stalker Hallucination
 
-        internal static bool SH_ToggleStalker { get; private set; }
+        internal static bool SH_ToggleModule { get; private set; }
         internal static float SH_StalkDelay { get; private set; }
 
         #endregion Stalker Hallucination
 
-        internal void Init()
+        private void Init()
         {
             config = new ConfigFile(Path.Combine(Paths.ConfigPath, "LethalSanity.cfg"), true);
 
-            PP_TogglePost = config.Bind("Post Processing", "Toggle Post Processing Module", true, "Toggle on and off the post processing module. This will completely remove insanity visual effects from the mod.").Value;
-            PP_PostPriority = config.Bind("Post Processing", "Change Post Priority", 0, "Changing the priority means to override every other post processing effect. This includes other mods and base game. Increasing means higher priority, decreasing means less priority.").Value;
-            //PP_Level1
-            //PP_Level2
-            //PP_Level3
+            // ======================[ Post Processing ]====================== \\
+            PP_ToggleModule = config.Bind("Post Processing", "Toggle Post Processing Module", true, "Toggle on and off the post processing module. This will completely remove insanity visual effects from the mod.").Value;
 
-            CL_ToggleLeanModule = config.Bind("Leaning", "Toggle Lean Module", true, "Toggle on and off the lean module. This will completely remove leaning from the mod.").Value;
+            // =======================[ Camera Leaning ]======================= \\
+            CL_ToggleModule = config.Bind("Leaning", "Toggle Lean Module", true, "Toggle on and off the lean module. This will completely remove leaning from the mod.").Value;
             CL_maxLeanAngle = config.Bind("Leaning", "Max Lean Angle", 35f, "Max amount of lean the camera can lean to.").Value;
             CL_threshold = config.Bind("Leaning", "Mouse Threshold", 35f, "How fast the mouse has to move before the lean is applied").Value;
 
-            FI_ToggleFakeItem = config.Bind("Fake Items", "Toggle Fake Items Module", true, "Toggle on and off the fake items module. This will completely remove fake item hallucinations from the mod.").Value;
+            // =========================[ Fake Items ]========================= \\
+            FI_ToggleModule = config.Bind("Fake Items", "Toggle Fake Items Module", true, "Toggle on and off the fake items module. This will completely remove fake item hallucinations from the mod.").Value;
             FI_MinItems = config.Bind("Fake Items", "Min Items", 1, "Minimum amount of fake items that will spawn").Value;
             FI_MaxItems = config.Bind("Fake Items", "Max Items", 3, "Maximum amount of fake items that will spawn").Value;
-            FI_RespawnDelay = config.Bind("Fake Items", "Toggle respawning after delay", true, "Should the items respawn after a certain time?").Value;
-            FI_SpawnDelay = config.Bind("Fake Items", "Spawn Delay", 60, "Respawn fakes after x ± rnd(5)").Value;
 
-            CS_ToggleCamShake = config.Bind("Camera Shake", "Toggle Camera Shake Module", true, "Toggle on and off the camera shake module. This will completely remove any added camera shaking from the mod.").Value;
+            // ========================[ Camera Shake ]======================== \\
+            CS_ToggleModule = config.Bind("Camera Shake", "Toggle Camera Shake Module", true, "Toggle on and off the camera shake module. This will completely remove any added camera shaking from the mod.").Value;
 
+            // ===================[ Stalker Hallucination ]=================== \\
             //SH_ToggleStalker = config.Bind("Stalker", "Toggle Stalker Module", true, "Toggle on and off the stalker module. This will completely remove the insanity creature *'(stalker)'* from the mod.").Value;
+        }
+
+        private void Init_Danger()
+        {
+            dconfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "LethalSanity_Danger.cfg"), true);
+
+            // ====================== [Post Processing] ====================== \\
+            PP_PostPriority = dconfig.Bind("Post Processing", "Change Post Priority", 0, "Changing the priority means to override every other post processing effect. This includes other mods and base game. Increasing means higher priority, decreasing means less priority.").Value;
+
+            PP_Level1 = dconfig.Bind("Post Processing", "Change Level 1", 35f, "Changing this value will change when the insanity level 1 will trigger. When the Insanity level has reaches this number, level 1 will start.").Value;
+            PP_Level2 = dconfig.Bind("Post Processing", "Change Level 2", 45f, "Changing this value will change when the insanity level 2 will trigger. When the Insanity level has reaches this number, level 2 will start.").Value;
+            PP_Level3 = dconfig.Bind("Post Processing", "Change Level 3", 65f, "Changing this value will change when the insanity level 3 will trigger. When the Insanity level has reaches this number, level 3 will start.").Value;
+
+            // ======================[ Insanity Options ]====================== \\
+            IO_MaxInsanity = dconfig.Bind("Insanity Options", "Change Max Insanity", 65f, "This will set the max insanity").Value;
+
+            // =========================[ Fake Items ]========================= \\
+            FI_RespawnDelay = dconfig.Bind("Fake Items", "Toggle respawning after delay", true, "Should the items respawn after a certain time?").Value;
+            FI_SpawnDelay = dconfig.Bind("Fake Items", "Spawn Delay", 60, "Respawn fakes after x ± rnd(5)").Value;
+
+            // ===================[ Stalker Hallucination ]=================== \\
             //SH_StalkDelay = config.Bind("Stalker", "Change Stalker Delay", 60, "Changing this will set how long the stalker will hide for. x ± rnd(5)").Value;
         }
     }

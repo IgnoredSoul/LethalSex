@@ -1,8 +1,13 @@
 ﻿# Updates
 
+## 1.4.0
+- Moved all update / late update into a singlular file.
+- All modules now handle registration and unregistration.
+
 ## 1.3.1
 - Added config for every module, able to toggle or change different value.
 - Added an extra multiplier for the CameraLeaning module.
+- Reworked config, adding a "danger" config for modpack creators and users who want to really customise the mod.
 
 ## 1.3.0 - The "InsanityRemastered Reimagined" Update >:3
 - Fake scrap will spawn around the player at random intervals. Picking the scrap up can cause random effects.

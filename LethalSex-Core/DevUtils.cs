@@ -13,7 +13,7 @@ namespace LethalSex_Core
         /// <summary>
         /// Load console object if not already loaded into scene
         /// </summary>
-        public override void OnHUDAwake()
+        protected override void OnHUDAwake()
         {
             // If console already exists or ToggleDebugConsole is disabled, exit.
             if (ConsoleObject || !Config.ToggleDebugConsole) return;
@@ -43,11 +43,11 @@ namespace LethalSex_Core
                 ConsoleObject?.transform.GetChild(0).gameObject.SetActive(!ConsoleObject.transform.GetChild(0).gameObject.activeInHierarchy);
         }
 
-        private void OnEnable() => base.Enabled();
+        private void OnEnable() => base.Enable();
 
-        private void OnDisable() => base.Disabled();
+        private void OnDisable() => base.Disable();
 
-        private void OnDestroy() => base.Destroyed();
+        private void OnDestroy() => base.Destroy();
 
         public static ConsoleManager instance { get; private set; }
 
@@ -113,7 +113,7 @@ namespace LethalSex_Core
 
     public class DevMenuManager : LethalClass
     {
-        public override void OnHUDAwake()
+        protected override void OnHUDAwake()
         {
             // If console already exists or ToggleDebugConsole is disabled, exit.
             if (DevMenuObject || !Config.ToggleDevMenu) return;
@@ -143,11 +143,11 @@ namespace LethalSex_Core
                 DevMenuObject?.transform.GetChild(0).gameObject.SetActive(!DevMenuObject.transform.GetChild(0).gameObject.activeInHierarchy);
         }
 
-        private void OnEnable() => base.Enabled();
+        private void OnEnable() => base.Enable();
 
-        private void OnDisable() => base.Disabled();
+        private void OnDisable() => base.Disable();
 
-        private void OnDestroy() => base.Destroyed();
+        private void OnDestroy() => base.Destroy();
 
         public static DevMenuManager instance { get; private set; }
         private static GameObject SectionPrefab { get; set; }

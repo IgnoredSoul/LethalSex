@@ -12,7 +12,7 @@ namespace LethalSex_Core
         internal readonly Harmony harmony = new Harmony(modGUID);
         private const string modGUID = "LethalSex-Core";
         private const string modName = "LethalSex-Core";
-        private const string modVersion = "1.2.1";
+        private const string modVersion = "2.0.0";
 
         private const string waterMark = @"
  ▄▀▀▀▀▄     ▄▀▀█▄▄▄▄  ▄▀▀▀█▀▀▄  ▄▀▀▄ ▄▄   ▄▀▀█▄   ▄▀▀▀▀▄         ▄▀▀▀▀▄  ▄▀▀█▄▄▄▄  ▄▀▀▄  ▄▀▄
@@ -45,7 +45,6 @@ namespace LethalSex_Core
             mls.LogError(waterMark);
 
             // Patch
-            LethalClass.Patch();
             harmony.PatchAll(typeof(LethalClass));
         }
     }

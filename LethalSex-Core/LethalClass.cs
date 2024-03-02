@@ -13,35 +13,75 @@ namespace LethalSex_Core
     public abstract class LethalClass : MonoBehaviour
     {
         protected static List<LethalClass> LethalClasses = new List<LethalClass>();
+        public bool Registered => LethalClasses.Contains(this);
 
-        internal static void Patch()
+        ~LethalClass() => Unregister();
+
+        #region ===================[ BaseClass Registration ]===================
+
+        protected virtual void OnRegister()
+        { Main.mls.LogFatal("Registered: " + this.GetType().Name); }
+
+        protected virtual void Register()
         {
-            // Try getting every thing yk
-            try
-            {
-                foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-                    // Create instances of the types and add them to the list
-                    LethalClasses.AddRange(a.GetTypes().Where(type => type.IsSubclassOf(typeof(LethalClass))).Select(type => (LethalClass)Activator.CreateInstance(type)));
-
-                ConsoleManager.Log($"Lethal Classes: [{string.Join(", ", LethalClasses.ToList().Select(obj => obj.GetType().Name))}]", "Init", Color.magenta);
-            }
-            catch (Exception ex) { ConsoleManager.Log($"Error getting every SubClass?;\n{ex}", "Err", Color.red); }
-        }
-
-        private void Update()
-        {
-            if (LocalPlayer.PlayerController && LocalPlayer.PlayerController.isPlayerDead) _handle_OnPlayerDie();
+            OnRegister();
+            if (!LethalClasses.Contains(this)) LethalClasses.Add(this);
         }
 
         /// <summary>
-        /// I made these cause I was too lazy to write 'ConsoleManager.Log($"Behaviour: "NAME" has been enabled");' everytime
-        /// ..... so yeah... lmfaoooo
+        /// When the module is unregistered, this virtual is called
         /// </summary>
-        public virtual void Enabled() => ConsoleManager.Log($"Behaviour: {GetType().Name} has been enabled");
+        protected virtual void OnUnregister()
+        { Main.mls.LogFatal($"Unregistered: {GetType().Name}"); }
 
-        public virtual void Disabled() => ConsoleManager.Log($"Behaviour: {GetType().Name} has been disable");
+        /// <summary>
+        /// When the module wants to unregister, this virtual is called
+        /// </summary>
+        protected virtual void Unregister()
+        {
+            OnUnregister();
+            if (LethalClasses.Contains(this)) LethalClasses.Remove(this);
+        }
 
-        public virtual void Destroyed() => ConsoleManager.Log($"Behaviour: {GetType().Name} has been destroyed");
+        /// <summary>
+        /// When the module is wants to unregister from an outside source, this method is called
+        /// </summary>
+        public void ManualUnregister() => Unregister();
+
+        #endregion ===================[ BaseClass Registration ]===================
+
+        // I made these cause I was too lazy to write 'ConsoleManager.Log($"Behaviour: "NAME" has been enabled");' everytime
+        // ..... so yeah... lmfaoooo
+
+        /// <summary>
+        /// When the component / gameObject is enabled
+        /// </summary>
+        protected virtual void Enable()
+        {
+            ConsoleManager.Log($"Behaviour: {GetType().Name} has been enabled and registered");
+        }
+
+        /// <summary>
+        /// When the component / gameObject is disabled
+        /// </summary>
+        protected virtual void Disable()
+        {
+            ConsoleManager.Log($"Behaviour: {GetType().Name} has been disable and unregistered");
+        }
+
+        /// <summary>
+        /// When the component / gameObject is destroyed
+        /// </summary>
+        protected virtual void Destroy()
+        {
+            LethalClasses.Remove(this);
+            ConsoleManager.Log($"Behaviour: {GetType().Name} has been destroyed and unregistered");
+        }
+
+        protected virtual void Awake()
+        {
+            Register();
+        }
 
         #region =====================[ Patches ]=====================
 
@@ -49,6 +89,8 @@ namespace LethalSex_Core
         [HarmonyPostfix]
         private static void _handle_OnHUDStart()
         {
+            start();
+
             LethalClasses.ForEach(async c =>
             {
                 try
@@ -86,6 +128,8 @@ namespace LethalSex_Core
         [HarmonyPostfix]
         private static void _handle_OnHUDUpdate()
         {
+            update();
+
             LethalClasses.ForEach(c =>
             {
                 try
@@ -191,7 +235,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Start.html"/> for the official Unity API documentation
         /// </summary>
-        public virtual void OnHUDStart()
+        protected virtual void OnHUDStart()
         { }
 
         /// <summary>
@@ -203,7 +247,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html"/> for the official Unity API documentation
         /// </summary>
-        public virtual void OnHUDAwake()
+        protected virtual void OnHUDAwake()
         { }
 
         /// <summary>
@@ -215,7 +259,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html"/> for the official Unity API documentation
         /// </summary>
-        public virtual void OnHUDUpdate()
+        protected virtual void OnHUDUpdate()
         { }
 
         /// <summary>
@@ -226,7 +270,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Start.html"/> for the official Unity API documentation
         /// </summary>
-        public virtual void OnLobbyStart()
+        protected virtual void OnLobbyStart()
         { }
 
         /// <summary>
@@ -238,7 +282,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html"/> for the official Unity API documentation
         /// </summary>
-        public virtual void OnLobbyAwake()
+        protected virtual void OnLobbyAwake()
         { }
 
         /// <summary>
@@ -249,7 +293,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <seealso cref="PlayerControllerB"/> for more info
         /// </summary>
-        public virtual void OnLocalPlayerStart(PlayerControllerB LocalPlayer)
+        protected virtual void OnLocalPlayerStart(PlayerControllerB LocalPlayer)
         { }
 
         /// <summary>
@@ -260,7 +304,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <seealso cref="PlayerControllerB"/> for more info
         /// </summary>
-        public virtual void OnGrabObject(GrabbableObject obj)
+        protected virtual void OnGrabObject(GrabbableObject obj)
         { }
 
         /// <summary>
@@ -271,7 +315,7 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <seealso cref="StartOfRound"/> for more info
         /// </summary>
-        public virtual void OnShipLand()
+        protected virtual void OnShipLand()
         { }
 
         /// <summary>
@@ -282,9 +326,20 @@ namespace LethalSex_Core
         /// <br/><br/>
         /// See: <seealso cref="PlayerControllerB"/> for more info
         /// </summary>
-        public virtual void OnPlayerDie()
+        protected virtual void OnPlayerDie()
         { }
 
         #endregion ==================[ Virtual Voids ]==================
+
+        private static void start()
+        {
+            ConsoleManager.Log($"Registerd Classes: [{string.Join(", ", LethalClasses.ToList().Select(obj => obj.GetType().Name))}]");
+            Main.mls.LogFatal($"Registerd Classes: [{string.Join(", ", LethalClasses.ToList().Select(obj => obj.GetType().Name))}]");
+        }
+
+        private static void update()
+        {
+            if ((bool)LocalPlayer.PlayerController?.isPlayerDead) _handle_OnPlayerDie();
+        }
     }
 }
