@@ -14,7 +14,7 @@ namespace LethalSanity.Modules
 
         protected override void OnRegister()
         {
-            if (!Config.CS_ToggleModule) Unregister();
+            if (!(bool)Config.config["CS"]["Enabled"]) Unregister();
         }
 
         /// <summary>

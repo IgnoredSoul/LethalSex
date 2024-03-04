@@ -1,6 +1,9 @@
 ﻿using GameNetcodeStuff;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -275,6 +278,83 @@ namespace LethalSex_Core
 
             currentValue = target;
             action(currentValue);
+        }
+
+        public static JObject JsonPackage(JObject[] objects, string[] keys)
+        {
+            if (objects.Length != keys.Length)
+            {
+                Debug.LogError("The objects array and keys array are not the same length.");
+                return JObject.Parse(JsonConvert.SerializeObject(new Dictionary<string, string>()));
+            }
+
+            JObject result = new JObject();
+
+            for (int i = 0; i < objects.Length; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(keys[i]))
+                {
+                    JObject currentObject = result;
+                    string[] embeddingKeys = keys[i].Split('.');
+                    for (int j = 0; j < embeddingKeys.Length - 1; j++)
+                    {
+                        if (currentObject[embeddingKeys[j]] == null)
+                        {
+                            currentObject[embeddingKeys[j]] = new JObject();
+                        }
+                        currentObject = (JObject)currentObject[embeddingKeys[j]];
+                    }
+                    currentObject[embeddingKeys.Last()] = objects[i];
+                }
+                else
+                {
+                    result.Merge(objects[i]);
+                }
+            }
+
+            return result;
+        }
+
+        public static void InsertArray(object[] items, JObject dest, string key)
+        {
+            dest[key] = new JObject()[key] = new JArray(items);
+        }
+
+        public static void InsertList(object[] values, string[] keys, JObject dest, string key)
+        {
+            if (values.Length != keys.Length)
+            {
+                Debug.LogError("The values array and keys array are not the same length.");
+                Debug.LogError($"[{string.Join(", ", values.ToList().Select(obj => obj))}], [{string.Join(", ", keys.ToList().Select(obj => obj))}]");
+                return;
+            }
+
+            dest[key] = JObject.FromObject(values.Zip(keys, (value, key) => new { Key = key, Value = value }).ToDictionary(item => item.Key, item => item.Value));
+        }
+
+        public static JObject CreateEntry(Action<JObject> entry)
+        {
+            JObject res = new JObject();
+            entry(res);
+            return res;
+        }
+
+        public static JObject CreateEntry(Action<JObject> entry, string key)
+        {
+            JObject res = new JObject();
+            entry(res);
+
+            JObject result = new JObject();
+            result[key] = res;
+            return result;
+        }
+
+        public static JObject CreateEntry(Action<JObject> entry, JObject dest, string key)
+        {
+            JObject res = new JObject();
+            entry(res);
+            dest[key] = res;
+            return res;
         }
     }
 

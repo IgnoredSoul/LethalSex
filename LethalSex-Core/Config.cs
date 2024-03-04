@@ -1,6 +1,11 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using UnityEngine;
 
 namespace LethalSex_Core
 {

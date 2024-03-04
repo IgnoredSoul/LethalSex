@@ -150,7 +150,6 @@ namespace LethalSanity.Modules
                 Extensions.SmoothIncrementValue("DOFStart", DOFComp.farFocusStart.Override, DOFComp.farFocusStart.value, 2000, 0.75f);
                 Extensions.SmoothIncrementValue("DOFEnd", DOFComp.farFocusEnd.Override, DOFComp.farFocusEnd.value, 2000, 0.75f);
                 Extensions.SmoothIncrementValue("CA", CAComp.saturation.Override, CAComp.saturation.value, 0f, 0.75f);
-                Extensions.SmoothIncrementValue("LensDist", LensDistComp.intensity.Override, LensDistComp.intensity.value, 0.3f, 17f);
             }
 
             // When:

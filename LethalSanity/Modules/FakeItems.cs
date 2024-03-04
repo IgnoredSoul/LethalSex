@@ -12,7 +12,7 @@ namespace LethalSanity.Modules
 
         protected override void OnRegister()
         {
-            if (!Config.FI_ToggleModule || Config.FI_MinItems > Config.FI_MaxItems) Unregister();
+            if (!(bool)Config.config["FI"]["Enabled"] || (int)Config.config["FI"]["Min"] > (int)Config.config["FI"]["Max"]) Unregister();
         }
 
         // When the ship lands, make new gameobject and add component
@@ -24,13 +24,13 @@ namespace LethalSanity.Modules
             // Add all scrap
             Whitelist.AddRange(RoundManager.Instance.currentLevel.spawnableScrap);
 
-            if (Config.FI_LogScrap)
+            if ((bool)Config.config["FI"]["Extra"]["Log"])
                 ConsoleManager.Log($"Whitelist Before: [{string.Join(", ", Whitelist.ToList().Select(obj => obj.spawnableItem.name.ToLower()))}]", "FakeItems", Color.magenta);
 
             for (int i = 0; i < Whitelist.Count; i++)
             {
                 // Check if the item's name exists in the second list
-                if (Config.FI_Blacklist.Contains(Whitelist[i].spawnableItem.name.ToLower()))
+                if (Config.config["Blacklist"].Contains(Whitelist[i].spawnableItem.name.ToLower()))
                 {
                     // Remove the item from the first list
                     Whitelist.RemoveAt(i);
@@ -40,7 +40,7 @@ namespace LethalSanity.Modules
                 }
             }
 
-            if (Config.FI_LogScrap)
+            if ((bool)Config.config["FI"]["Extra"]["Log"])
                 ConsoleManager.Log($"Whitelist After: [{string.Join(", ", Whitelist.ToList().Select(obj => obj.spawnableItem.name.ToLower()))}]", "FakeItems", Color.magenta);
         }
 
@@ -60,13 +60,13 @@ namespace LethalSanity.Modules
                 if (LocalPlayer.PlayerController.isInsideFactory)
                 {
                     // Then check if the player wants the items to respawn
-                    if (Config.FI_DoRespawn)
+                    if ((bool)Config.config["FI"]["Extra"]["Respawning"])
                     {
                         // Spawn new objects
                         SpawnNewFakes();
 
                         // Wait for (CONFIG.SPAWNDELAY - rnd(5f)) to (CONFIG.SPAWNDELAY + rnd(5f)) seconds
-                        yield return new WaitForSeconds(NumberUtils.Next((Config.FI_SpawnDelay - NumberUtils.Next(5f)), (Config.FI_SpawnDelay + NumberUtils.Next(5f))));
+                        yield return new WaitForSeconds(NumberUtils.Next(((float)Config.config["FI"]["Extra"]["Delay"] - NumberUtils.Next(5f)), ((float)Config.config["FI"]["Extra"]["Delay"] + NumberUtils.Next(5f))));
 
                         // Delete fakes
                         foreach (GameObject fake in Fakes) Destroy(fake);
@@ -96,13 +96,13 @@ namespace LethalSanity.Modules
             try
             {
                 // Spawn (CONFIG.MIN) to (CONFIG.MAX) items
-                for (int i = 0; i < NumberUtils.Next(Config.FI_MinItems, Config.FI_MaxItems); i++)
+                for (int i = 0; i < NumberUtils.Next((int)Config.config["FI"]["cfg"]["Min"], (int)Config.config["FI"]["cfg"]["Max"]); i++)
                 {
                     // Choose a random scrap
                     SpawnableItemWithRarity scrap = Whitelist[NumberUtils.NextL(Whitelist.Count)];
 
                     // Choose a random position
-                    Vector3 position = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(LocalPlayer.Player.transform.position, Config.FI_SpawnRadius) + Vector3.up * scrap.spawnableItem.verticalOffset;
+                    Vector3 position = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(LocalPlayer.Player.transform.position, (float)Config.config["FI"]["cfg"]["Radius"]) + Vector3.up * scrap.spawnableItem.verticalOffset;
 
                     // Instantiate new object
                     GameObject itemObject = Instantiate(scrap.spawnableItem.spawnPrefab, position, Quaternion.identity);

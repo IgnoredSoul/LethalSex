@@ -3,6 +3,7 @@
 ## 1.4.0
 - Moved all update / late update into a singlular file.
 - All modules now handle registration and unregistration.
+- Converted config to JObject config and redone .cfg settings to support it.
 
 ## 1.3.1
 - Added config for every module, able to toggle or change different value.

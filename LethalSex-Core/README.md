@@ -3,6 +3,7 @@
 ## 1.3.0
 - Added more extenions.
 - Added Unregister to completely disable modules.
+- Added JObject List, Array and Package.
 
 ## 1.2.0
 - Added override "OnGrabObject".

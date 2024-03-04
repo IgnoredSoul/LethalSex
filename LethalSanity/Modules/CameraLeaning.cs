@@ -14,7 +14,7 @@ namespace LethalSanity.Modules
 
         protected override void OnRegister()
         {
-            if (!Config.CL_ToggleModule) Unregister();
+            if (!(bool)Config.config["CL"]["Enabled"]) Unregister();
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace LethalSanity.Modules
             Vector3 eulerAngles = LocalPlayer.Camera.transform.localRotation.eulerAngles;
             Vector2 vector = Mouse.current.delta.ReadValue();
 
-            if (!LocalPlayer.IsMenuOpen && !LocalPlayer.IsTermOpen && (vector.x >= Config.CL_threshold || vector.x <= -Config.CL_threshold))
+            if (!LocalPlayer.IsMenuOpen && !LocalPlayer.IsTermOpen && (vector.x >= (float)Config.config["CL"]["Threshold"] || vector.x <= -(float)Config.config["CL"]["Threshold"]))
             {
                 float multiplier = 0.05f;
                 if (LocalPlayer.PlayerController.isSprinting)
@@ -46,13 +46,13 @@ namespace LethalSanity.Modules
                     multiplier += 0.05f;
 
                 // Check if its negative or not before multipling then clamp to (CONFIG.MAXLEAN)
-                eulerAngles.z += Mathf.Clamp(multiplier * ((vector.x < 0f) ? (vector.x - Config.CL_threshold) : (vector.x + Config.CL_threshold)), -Config.CL_maxLeanAngle, Config.CL_maxLeanAngle);
+                eulerAngles.z += Mathf.Clamp(multiplier * ((vector.x < 0f) ? (vector.x - (float)Config.config["CL"]["Threshold"]) : (vector.x + (float)Config.config["CL"]["Threshold"])), -(float)Config.config["CL"]["Max"], (float)Config.config["CL"]["Max"]);
             }
             else
                 eulerAngles.z = 0f;
 
             // Do the leaning shit
-            transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(eulerAngles), Config.CL_ResetSpeed * Time.deltaTime);
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(eulerAngles), (float)Config.config["CL"]["Reset"] * Time.deltaTime);
         }
 
         private void OnDestroy() => base.Destroy();
