@@ -10,6 +10,8 @@ namespace LethalSex_Core
 {
     public class ConsoleManager : LethalClass
     {
+        public static ConsoleManager Module { get; private set; }
+
         /// <summary>
         /// Load console object if not already loaded into scene
         /// </summary>
@@ -27,11 +29,14 @@ namespace LethalSex_Core
             // Get ScrollRect
             ConsoleScroll = ConsoleObject.transform.Find("ConsoleArea").GetComponent<ScrollRect>();
 
+            // Change version text
+            ConsoleObject.transform.Find("ConsoleArea/ConsoleBackground/GameVersion").GetComponent<TextMeshProUGUI>().text = $"v{Main.modVersion}";
+
             // Update text
             if (ConsoleText && ConsoleScroll) ConsoleText.text = _consoleTextBuffer.ToString();
 
             // Add ConsoleManager component
-            instance = ConsoleObject.AddComponent<ConsoleManager>();
+            Module = ConsoleObject.AddComponent<ConsoleManager>();
         }
 
         /// <summary>
@@ -48,8 +53,6 @@ namespace LethalSex_Core
         private void OnDisable() => base.Disable();
 
         private void OnDestroy() => base.Destroy();
-
-        public static ConsoleManager instance { get; private set; }
 
         private static StringBuilder _consoleTextBuffer = new StringBuilder();
         public static TextMeshProUGUI ConsoleText { get; set; }
@@ -102,9 +105,9 @@ namespace LethalSex_Core
         /// <param name="color"></param>
         public static void Log(object msg, object prefix, Color color)
         {
+            _consoleTextBuffer.Append($"[{DateTimeOffset.Now.ToString("hh:mm:ss:ff")}] [{WIC($"{prefix}", CTH(color))}] ~> {msg}\n");
             if (ConsoleObject)
             {
-                _consoleTextBuffer.Append($"[{DateTimeOffset.Now.ToString("hh:mm:ss:ff")}] [{WIC($"{prefix}", CTH(color))}] ~> {msg}\n");
                 if (ConsoleText && ConsoleScroll)
                     ConsoleText.text = _consoleTextBuffer.ToString();
             }
@@ -113,6 +116,8 @@ namespace LethalSex_Core
 
     public class DevMenuManager : LethalClass
     {
+        public static DevMenuManager Module { get; private set; }
+
         protected override void OnHUDAwake()
         {
             // If console already exists or ToggleDebugConsole is disabled, exit.
@@ -134,7 +139,7 @@ namespace LethalSex_Core
             SliderPrefab = Main.bundle.LoadAsset<GameObject>("assets/lethalsex-core/devmenu/slider.prefab");
 
             // Add ConsoleManager component
-            instance = DevMenuObject.AddComponent<DevMenuManager>();
+            Module = DevMenuObject.AddComponent<DevMenuManager>();
         }
 
         private void Update()
@@ -149,7 +154,6 @@ namespace LethalSex_Core
 
         private void OnDestroy() => base.Destroy();
 
-        public static DevMenuManager instance { get; private set; }
         private static GameObject SectionPrefab { get; set; }
         private static GameObject ButtonPrefab { get; set; }
         private static GameObject SliderPrefab { get; set; }

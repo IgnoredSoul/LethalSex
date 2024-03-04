@@ -1,7 +1,12 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System;
+using System.Linq;
 using UnityEngine;
+using Newtonsoft.Json.Linq;
 
 namespace LethalSex_Core
 {
@@ -12,7 +17,7 @@ namespace LethalSex_Core
         internal readonly Harmony harmony = new Harmony(modGUID);
         private const string modGUID = "LethalSex-Core";
         private const string modName = "LethalSex-Core";
-        private const string modVersion = "2.0.0";
+        internal const string modVersion = "1.3.0";
 
         private const string waterMark = @"
  ▄▀▀▀▀▄     ▄▀▀█▄▄▄▄  ▄▀▀▀█▀▀▄  ▄▀▀▄ ▄▄   ▄▀▀█▄   ▄▀▀▀▀▄         ▄▀▀▀▀▄  ▄▀▀█▄▄▄▄  ▄▀▀▄  ▄▀▄
@@ -41,11 +46,12 @@ namespace LethalSex_Core
             // Load config
             new Config().Init();
 
+            // Patch
+            LethalClass.RegisterAll();
+            harmony.PatchAll(typeof(LethalClass));
+
             // Print watermark
             mls.LogError(waterMark);
-
-            // Patch
-            harmony.PatchAll(typeof(LethalClass));
         }
     }
 }

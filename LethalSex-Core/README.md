@@ -1,8 +1,8 @@
 ﻿# Updates
 
-## 2.0.0
+## 1.3.0
 - Added more extenions.
-- Complete rewrite of the "lethalclass" class, old one was kind off pissing me off.
+- Added Unregister to completely disable modules.
 
 ## 1.2.0
 - Added override "OnGrabObject".

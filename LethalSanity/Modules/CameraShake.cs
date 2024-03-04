@@ -1,6 +1,5 @@
 ﻿using GameNetcodeStuff;
 using LethalSex_Core;
-
 using System.Collections;
 using UnityEngine;
 
@@ -8,42 +7,27 @@ namespace LethalSanity.Modules
 {
     internal class CameraShake : LethalClass
     {
-        public static CameraShake Module { get; private set; } = null!;
-
         /// <summary>
-        /// Assign Module to this instance.
+        /// CameraShake component Module
         /// </summary>
-/*        protected override void OnRegister()
+        public static CameraShake Module { get; private set; }
+
+        protected override void OnRegister()
         {
-            // Unregister this module if disabled in the config.
-            if (!Config.CS_ToggleModule) { ManualUnregister(); return; }
-
-            base.OnRegister();
-            Module = this;
-        }*/
-
-        protected override void OnUnregister()
-        {
-            Extensions.TryDestroy(LocalPlayer.Camera.gameObject.GetComponent<CameraShake>());
-
-            base.OnUnregister();
-            Module = null;
+            if (!Config.CS_ToggleModule) Unregister();
         }
 
         /// <summary>
         /// When the local player component is initiated, assign and create a new instance of the component onto the camera
         /// </summary>
         /// <param name="_LocalPlayer"></param>
-        protected override void OnLocalPlayerStart(PlayerControllerB _LocalPlayer) => LocalPlayer.Camera.gameObject.GetOrAddComponent<CameraShake>();
+        protected override void OnLocalPlayerStart(PlayerControllerB _LocalPlayer) => Module = _LocalPlayer.gameplayCamera.gameObject.GetOrAddComponent<CameraShake>();
 
         /// <summary>
         /// How much the camera should wobble. (Low floats)
         /// </summary>
         internal float wobbleAmount { get; set; }
 
-        /// <summary>
-        /// Coroutine feild for the camera wobble
-        /// </summary>
         private Coroutine wobbleCoro { get; set; }
 
         /// <summary>
@@ -76,5 +60,11 @@ namespace LethalSanity.Modules
                 transform.localPosition = new Vector3(0, 0, 0);
             }
         }
+
+        private void OnDestroy() => base.Destroy();
+
+        private void OnDisable() => base.Disable();
+
+        private void OnEnable() => base.Enable();
     }
 }

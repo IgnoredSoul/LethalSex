@@ -15,72 +15,46 @@ namespace LethalSex_Core
         protected static List<LethalClass> LethalClasses = new List<LethalClass>();
         public bool Registered => LethalClasses.Contains(this);
 
-        ~LethalClass() => Unregister();
-
         #region ===================[ BaseClass Registration ]===================
 
-        protected virtual void OnRegister()
-        { Main.mls.LogFatal("Registered: " + this.GetType().Name); }
-
-        protected virtual void Register()
+        internal static void RegisterAll()
         {
-            OnRegister();
-            if (!LethalClasses.Contains(this)) LethalClasses.Add(this);
+            // Try getting every thing yk
+            try
+            {
+                foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+                    // Create instances of the types and add them to the list
+                    LethalClasses.AddRange(a.GetTypes().Where(type => type.IsSubclassOf(typeof(LethalClass))).Select(type => (LethalClass)Activator.CreateInstance(type)));
+
+                _handle_OnRegister();
+
+                ConsoleManager.Log($"All Classes: [{string.Join(", ", LethalClasses.ToList().Select(obj => obj.GetType().Name))}]", "LethalClass", Color.magenta);
+            }
+            catch (Exception ex) { ConsoleManager.Log($"Error getting every SubClass?;\n{ex}", "Err", Color.red); }
         }
 
-        /// <summary>
-        /// When the module is unregistered, this virtual is called
-        /// </summary>
-        protected virtual void OnUnregister()
-        { Main.mls.LogFatal($"Unregistered: {GetType().Name}"); }
-
-        /// <summary>
-        /// When the module wants to unregister, this virtual is called
-        /// </summary>
-        protected virtual void Unregister()
+        protected void Unregister()
         {
-            OnUnregister();
-            if (LethalClasses.Contains(this)) LethalClasses.Remove(this);
+            LethalClasses.Remove(this);
+            ConsoleManager.Log($"Registered: [{string.Join(", ", LethalClasses.ToList().Select(obj => obj.GetType().Name))}]", "LethalClass", Color.magenta);
         }
-
-        /// <summary>
-        /// When the module is wants to unregister from an outside source, this method is called
-        /// </summary>
-        public void ManualUnregister() => Unregister();
 
         #endregion ===================[ BaseClass Registration ]===================
 
-        // I made these cause I was too lazy to write 'ConsoleManager.Log($"Behaviour: "NAME" has been enabled");' everytime
-        // ..... so yeah... lmfaoooo
-
-        /// <summary>
-        /// When the component / gameObject is enabled
-        /// </summary>
         protected virtual void Enable()
         {
             ConsoleManager.Log($"Behaviour: {GetType().Name} has been enabled and registered");
         }
 
-        /// <summary>
-        /// When the component / gameObject is disabled
-        /// </summary>
         protected virtual void Disable()
         {
             ConsoleManager.Log($"Behaviour: {GetType().Name} has been disable and unregistered");
         }
 
-        /// <summary>
-        /// When the component / gameObject is destroyed
-        /// </summary>
         protected virtual void Destroy()
         {
             LethalClasses.Remove(this);
             ConsoleManager.Log($"Behaviour: {GetType().Name} has been destroyed and unregistered");
-        }
-
-        protected virtual void Awake()
-        {
-            Register();
         }
 
         #region =====================[ Patches ]=====================
@@ -111,7 +85,7 @@ namespace LethalSex_Core
 
         [HarmonyPatch(typeof(HUDManager), "Awake")]
         [HarmonyPostfix]
-        private static void _handle_ONHUDAwake()
+        private static void _handle_OnHUDAwake()
         {
             LethalClasses.ForEach(c =>
             {
@@ -223,119 +197,57 @@ namespace LethalSex_Core
             });
         }
 
+        private static void _handle_OnRegister()
+        {
+            LethalClasses.ForEach(c =>
+            {
+                try
+                {
+                    // Called after all modules have registered
+                    c?.OnRegister();
+                }
+                catch (Exception e) { ConsoleManager.Log($"Error calling OnRegister\n{e}\n", "Err", Color.red); }
+            });
+        }
+
         #endregion =====================[ Patches ]=====================
 
         #region ==================[ Virtual Voids ]==================
 
-        /// <summary>
-        /// Method called when the Heads-Up Display (<seealso cref="HUDManager"/>) system starts.
-        /// <br/>
-        /// This method can be overridden in derived classes to perform specific actions
-        /// to the (<seealso cref="HUDManager"/>) start event.
-        /// <br/><br/>
-        /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Start.html"/> for the official Unity API documentation
-        /// </summary>
+        protected virtual void OnRegister()
+        { }
+
         protected virtual void OnHUDStart()
         { }
 
-        /// <summary>
-        /// Method called when the Heads-Up Display (<seealso cref="HUDManager"/>) object is initialized,
-        /// before it is shown on the screen.
-        /// <br/>
-        /// This method can be overridden in derived classes to perform specific actions
-        /// to the (<seealso cref="HUDManager"/>) awake event.
-        /// <br/><br/>
-        /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html"/> for the official Unity API documentation
-        /// </summary>
         protected virtual void OnHUDAwake()
         { }
 
-        /// <summary>
-        /// Method called when the Heads-Up Display (<seealso cref="HUDManager"/>) object is initialized,
-        /// before it is shown on the screen.
-        /// <br/>
-        /// This method can be overridden in derived classes to perform specific actions
-        /// to the (<seealso cref="HUDManager"/>) awake event.
-        /// <br/><br/>
-        /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html"/> for the official Unity API documentation
-        /// </summary>
         protected virtual void OnHUDUpdate()
         { }
 
-        /// <summary>
-        /// Method called when the lobby (<seealso cref="StartOfRound"/>) system starts.
-        /// <br/>
-        /// This method can be overridden in derived classes to perform specific actions
-        /// to the (<seealso cref="StartOfRound"/>) start event.
-        /// <br/><br/>
-        /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Start.html"/> for the official Unity API documentation
-        /// </summary>
         protected virtual void OnLobbyStart()
         { }
 
-        /// <summary>
-        /// Method called when the Heads-Up Display (<seealso cref="StartOfRound"/>) object is initialized,
-        /// before it is shown on the screen.
-        /// <br/>
-        /// This method can be overridden in derived classes to perform specific actions
-        /// to the (<seealso cref="StartOfRound"/>) awake event.
-        /// <br/><br/>
-        /// See: <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html"/> for the official Unity API documentation
-        /// </summary>
         protected virtual void OnLobbyAwake()
         { }
 
-        /// <summary>
-        /// Method called when the local player (<seealso cref="PlayerControllerB"/>) system starts.
-        /// <br/>
-        /// This method can be overridden in derived classes to perform specific actions
-        /// to the (<seealso cref="PlayerControllerB"/>) start event.
-        /// <br/><br/>
-        /// See: <seealso cref="PlayerControllerB"/> for more info
-        /// </summary>
-        protected virtual void OnLocalPlayerStart(PlayerControllerB LocalPlayer)
+        protected virtual void OnLocalPlayerStart(PlayerControllerB _LocalPlayer)
         { }
 
-        /// <summary>
-        /// Method called when the local player (<seealso cref="PlayerControllerB"/>) starts to grab an object.
-        /// <br/>
-        /// This method can be overridden in derived classes to perform specific actions
-        /// to the (<seealso cref="PlayerControllerB"/>) BeginGrabObject method.
-        /// <br/><br/>
-        /// See: <seealso cref="PlayerControllerB"/> for more info
-        /// </summary>
         protected virtual void OnGrabObject(GrabbableObject obj)
         { }
 
-        /// <summary>
-        /// Method called when the local player (<seealso cref="StartOfRound"/>) 'OnShipLandedMiscEvents' is called.
-        /// <br/>
-        /// This method can be overridden in derived classes to perform specific actions
-        /// to the (<seealso cref="StartOfRound"/>) 'OnShipLandedMiscEvents' method.
-        /// <br/><br/>
-        /// See: <seealso cref="StartOfRound"/> for more info
-        /// </summary>
         protected virtual void OnShipLand()
         { }
 
-        /// <summary>
-        /// Method called when the local player (<seealso cref="PlayerControllerB"/>) fucking dies.
-        /// <br/>
-        /// This method can be overridden in derived classes to perform specific actions
-        /// to the (<seealso cref="PlayerControllerB"/>) 'isPlayerDead' field.
-        /// <br/><br/>
-        /// See: <seealso cref="PlayerControllerB"/> for more info
-        /// </summary>
         protected virtual void OnPlayerDie()
         { }
 
         #endregion ==================[ Virtual Voids ]==================
 
         private static void start()
-        {
-            ConsoleManager.Log($"Registerd Classes: [{string.Join(", ", LethalClasses.ToList().Select(obj => obj.GetType().Name))}]");
-            Main.mls.LogFatal($"Registerd Classes: [{string.Join(", ", LethalClasses.ToList().Select(obj => obj.GetType().Name))}]");
-        }
+        { }
 
         private static void update()
         {
