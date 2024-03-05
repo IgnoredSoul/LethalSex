@@ -38,11 +38,6 @@ namespace LethalSex_Core
             }
         }
 
-        /// <summary>
-        /// Return ueaj
-        /// </summary>
-        /// <param name="percentage"></param>
-        /// <returns></returns>
         public static bool Chance(int percentage = 50)
         {
             if (percentage < 1 || percentage > 100) return false;
