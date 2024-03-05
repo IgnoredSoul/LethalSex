@@ -2,7 +2,7 @@
 
 ## 1.3.0 - The "InsanityRemastered Reimagined" Update >:3
 - Fake scrap will spawn around the player at random intervals. Picking the scrap up can cause random effects.
-- [W.I.P] New monster called "stalker" takes after [REDACTED]. It will follow the player around when [REDACTED] and will not despawn after then :)
+- [W.I.P] New monster called "stalker" takes after the flowerman. He will follow the player around when reaching insanity level 1 and will not despawn after then :)
 - More config to the leaning module
 
 ## 1.2.0 - Fuck.
