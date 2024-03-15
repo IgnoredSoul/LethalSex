@@ -19,14 +19,10 @@ namespace LethalSanity.Modules
         {
             if (!LocalPlayer.Player) return;
 
-            // Get the current camera rotation
-            Vector3 curRot = LocalPlayer.Camera.transform.localRotation.eulerAngles;
+            Vector3 eulerAngles = LocalPlayer.Camera.transform.localRotation.eulerAngles;
+            Vector2 vector = Mouse.current.delta.ReadValue();
 
-            // Read mouse input
-            Vector2 mouseDelta = Mouse.current.delta.ReadValue();
-
-            // If the menu or terminal isnt open and the mouse is moving past the threshold
-            if ((!LocalPlayer.IsMenuOpen && !LocalPlayer.IsTermOpen) && (mouseDelta.x >= Config.threshold || mouseDelta.x <= -Config.threshold))
+            if (!LocalPlayer.IsMenuOpen && !LocalPlayer.IsTermOpen && (vector.x >= Config.CL_Threshold || vector.x <= -Config.CL_Threshold))
             {
                 float LeanMultiplier = 0.05f;
 
@@ -39,18 +35,14 @@ namespace LethalSanity.Modules
                 // If the player is fucking insane
                 if (LocalPlayer.Insanity >= 60f) LeanMultiplier += 0.05f;
 
-                // Calculate the amount of lean based on the mouse movement and apply the lean in the direction of movement
-                curRot.z += Mathf.Clamp(((mouseDelta.x - Config.threshold) * LeanMultiplier), -Config.maxLeanAngle, Config.maxLeanAngle);
+                // Check if its negative or not before multipling then clamp to (CONFIG.MAXLEAN)
+                eulerAngles.z += Mathf.Clamp(LeanMultiplier * ((vector.x < 0f) ? (vector.x - Config.CL_Threshold) : (vector.x + Config.CL_Threshold)), -Config.CL_MaxLean, Config.CL_MaxLean);
             }
             else
-            {
-                // Set the rotation to 0 so it straightens the camera
-                curRot.z = 0;
-            }
+                eulerAngles.z = 0f;
 
-            // Smoothly interpolate between the current rotation and the target rotation
-            Quaternion targetRotation = Quaternion.Euler(curRot);
-            transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRotation, (5 * Time.deltaTime));
+            // Do the leaning shit
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(eulerAngles), 5 * Time.deltaTime);
         }
 
         private void OnDestroy() => base.Destroyed();

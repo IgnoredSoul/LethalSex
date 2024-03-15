@@ -10,6 +10,7 @@ namespace LethalSanity.Modules
         // When the ship lands, make new gameobject and add component
         public override void OnShipLand()
         {
+            if (!Config.ToggleFIModule) return;
             FakeItemHandler = new GameObject("FakeItemHandler");
             FakeItemHandler.AddComponent<FakeItem>();
         }
@@ -23,23 +24,47 @@ namespace LethalSanity.Modules
         // Do loop shit
         private IEnumerator HandleItem()
         {
+            bool hasWaited = false;
+            // Do loop shit
             while (true)
             {
-                // If the player is inside the factory
+                // Firstly check if the player is inside the factory
                 if (LocalPlayer.PlayerController.isInsideFactory)
                 {
-                    // Spawn new objects
-                    SpawnNewFakes();
+                    if (!hasWaited)
+                    {
+                        hasWaited = true;
+                        yield return new WaitForSeconds(Config.FI_Delay);
+                    }
 
-                    // Wait for 30 - 70 seconds
-                    yield return new WaitForSeconds(NumberUtils.Next(30, 70));
+                    // Then check if the player wants the items to respawn
+                    if (Config.FI_Respawning)
+                    {
+                        // Spawn new objects
+                        SpawnNewFakes();
 
-                    // Delete fakes
-                    foreach (GameObject fake in Fakes) Destroy(fake);
+                        // Wait for (CONFIG.SPAWNDELAYMIN to CONFIG.SPAWNDELAYMAX) seconds
+                        yield return new WaitForSeconds(NumberUtils.Next(Config.FI_RespawnDelayMin - NumberUtils.Next(5f), Config.FI_RespawnDelayMax + NumberUtils.Next(5f)));
+
+                        // Delete fakes
+                        foreach (GameObject fake in Fakes) Destroy(fake);
+                    }
+
+                    // Else just spawn and stop
+                    else
+                    {
+                        // Spawn new objects
+                        SpawnNewFakes();
+
+                        // Break loop
+                        yield break;
+                    }
                 }
-
-                // Loop
-                yield return null;
+                // Else we wait till the player is inside
+                else
+                {
+                    yield return new WaitForSeconds(NumberUtils.Next(5, 10));
+                }
             }
         }
 
@@ -49,13 +74,13 @@ namespace LethalSanity.Modules
             try
             {
                 // Chose random about of scrap
-                for (int i = 0; i < NumberUtils.Next(1, 3); i++)
+                for (int i = 0; i < NumberUtils.Next(Config.FI_Min, Config.FI_Max); i++)
                 {
                     // Choose a random scrap
                     SpawnableItemWithRarity scrap = RoundManager.Instance.currentLevel.spawnableScrap[NumberUtils.NextL(RoundManager.Instance.currentLevel.spawnableScrap.Count)];
 
                     // Choose a random position
-                    Vector3 position = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(LocalPlayer.Player.transform.position, 25) + Vector3.up * scrap.spawnableItem.verticalOffset;
+                    Vector3 position = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(LocalPlayer.Player.transform.position, Config.FI_Rad) + Vector3.up * scrap.spawnableItem.verticalOffset;
 
                     // Instantiate new object
                     GameObject itemObject = Instantiate(scrap.spawnableItem.spawnPrefab, position, Quaternion.identity);
@@ -63,6 +88,7 @@ namespace LethalSanity.Modules
                     // Put "Fake_" in front
                     itemObject.name = $"Fake_{itemObject.name}_{NumberUtils.Next(1000f)}";
                     Fakes.Add(itemObject);
+                    ConsoleManager.Log($"Spawned {scrap.spawnableItem.name}");
                 }
             }
             catch (System.Exception e) { ConsoleManager.Log(e); }
