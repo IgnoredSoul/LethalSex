@@ -11,7 +11,7 @@ namespace LethalSanity
         internal readonly Harmony harmony = new Harmony(modGUID);
         private const string modGUID = "LethalSanity";
         private const string modName = "LethalSanity";
-        private const string modVersion = "1.3.0";
+        private const string modVersion = "1.3.1";
 
         internal static Main instance { get; private set; }
         internal static AssetBundle bundle { get; private set; }
