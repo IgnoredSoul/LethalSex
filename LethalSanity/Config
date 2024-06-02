@@ -1,0 +1,228 @@
+﻿using BepInEx;
+using System.IO;
+using UnityEngine;
+using Newtonsoft.Json.Linq;
+using BepInEx.Configuration;
+
+namespace LethalSanity
+{
+    internal class Config
+    {
+        internal static JObject config { get; private set; }
+
+        internal void Init()
+        {
+            // =====================================================[ Create / Read ]===================================================== \\
+            ConfigFile _config = new ConfigFile(Path.Combine(Paths.ConfigPath, "LethalSanity.cfg"), true, new(Main.modGUID, Main.modName, Main.modVersion));
+            JObject _cfg = new();
+
+            // ==========================================================[ Info ]========================================================== \\
+            _config.Bind("!Info!", "READ", "https://github.com/IgnoredSoul/LethalSex, Yes some descriptions do get cut off, so please visit the github repo for more information!"); /* Info / Warning I guess. */
+
+            config = NecroAssembler.CreateEntry((config) =>
+            {
+                #region ====================================================[ Post Processing ]====================================================
+
+                config.CreateShelf(
+                    _name: "PP",
+                    _keys: "Enabled, Priority",
+                    _items: _config.Bind
+                    (
+                        section: "Post Processing",
+                        key: "Post Processing Config",
+                        defaultValue: "b:true, i:0",
+                        description: "1) Toggle on and off the post processing module. This will completely remove insanity visual effects from the mod.\n2) Changing the priority means to override every other post processing effect. This includes other mods and base game. Increasing means higher priority, decreasing means less priority."
+                    ).Value,
+                    _expected: ['b', 'i']
+                 );
+
+                config.CreateShelf(
+                    _name: "ChrAb",
+                    _keys: "Enabled, Lvl, ApplyVal, ApplySpeed, ResetVal, ResetSpeed",
+                    _items: _config.Bind
+                    (
+                        section: "Post Processing",
+                        key: "Chromatic Aberation",
+                        defaultValue: "b:true, i:2, f:1.0, f:20.0, f:0.0, f:2.50",
+                        description: "To even understand what the fuck is happening you've got to read the documentation / code on my github..."
+                    ).Value,
+                    _expected: ['b', 'i', 'f', 'f', 'f', 'f',]
+                 );
+
+                config.CreateShelf(
+                    _name: "LensDist",
+                    _keys: "Enabled, Lvl, ApplyVal, ApplySpeed, ResetVal, ResetSpeed",
+                    _items: _config.Bind
+                    (
+                        section: "Post Processing",
+                        key: "Lens Distortion",
+                        defaultValue: "b:true, i:2, f:0.55, f:27.0, f:0.0, f:2.0",
+                        description: "To even understand what the fuck is happening you've got to read the documentation / code on my github..."
+                    ).Value,
+                    _expected: ['b', 'i', 'f', 'f', 'f', 'f',]
+                 );
+
+                config.CreateShelf(
+                    _name: "FilmGrain",
+                    _keys: "Enabled, Lvl, ApplyVal, ApplySpeed, ResetVal, ResetSpeed",
+                    _items: _config.Bind
+                    (
+                        section: "Post Processing",
+                        key: "Film Grain",
+                        defaultValue: "b:true, i:1, f:1.6, f:15.0, f:0.0, f:5.0",
+                        description: "To even understand what the fuck is happening you've got to read the documentation / code on my github..."
+                    ).Value,
+                    _expected: ['b', 'i', 'f', 'f', 'f', 'f',]
+                 );
+
+                config.CreateShelf(
+                    _name: "Vignette",
+                    _keys: "Enabled, Lvl, ApplyVal, ApplySpeed, ResetVal, ResetSpeed, Opacity, Smoothness",
+                    _items: _config.Bind
+                    (
+                        section: "Post Processing",
+                        key: "Vingette",
+                        defaultValue: "b:true, i:1, f:0.5, f:25, f:0.1, f:4.75, f:0.5, f:25.0",
+                        description: "To even understand what the fuck is happening you've got to read the documentation / code on my github..."
+                    ).Value,
+                    _expected: ['b', 'i', 'f', 'f', 'f', 'f', 'f', 'f']
+                 );
+
+                config.CreateShelf(
+                    _name: "DOP",
+                    _keys: "Enabled, Lvl, SApplyVal, SApplySpeed, SResetVal, SResetSpeed, EApplyVal, EApplySpeed, EResetVal, EResetSpeed",
+                    _items: _config.Bind
+                    (
+                        section: "Post Processing",
+                        key: "Depth Of Field",
+                        defaultValue: "b:true, i:3, f:5.0, f:25.0, f:2000.0, f:1.75, f:25.0, f:20.0, f:2000.0, f:1.75",
+                        description: "To even understand what the fuck is happening you've got to read the documentation / code on my github..."
+                    ).Value,
+                    _expected: ['b', 'i', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f']
+                 );
+
+                config.CreateShelf(
+                    _name: "CA",
+                    _keys: "Enabled, Lvl, ApplyVal, ApplySpeed, ResetVal, ResetSpeed",
+                    _items: _config.Bind
+                    (
+                        section: "Post Processing",
+                        key: "Color Adjustments",
+                        defaultValue: "b:true, i:3, f:-64.0, f:25.0, f:0.0, f:3.75",
+                        description: "To even understand what the fuck is happening you've got to read the documentation / code on my github..."
+                    ).Value,
+                    _expected: ['b', 'i', 'f', 'f', 'f', 'f']
+                 );
+
+                #endregion ====================================================[ Post Processing ]====================================================
+
+                #region ===================================================[ Insanity Options ]====================================================
+
+                config.CreateShelf(
+                    _name: "IO",
+                    _keys: "MaxInsanity, Lvl1, Lvl2, Lvl3",
+                    _items: _config.Bind
+                    (
+                        section: "Insanity",
+                        key: "Insanity Options",
+                        defaultValue: "f:65.0, f:35.0, f:45.0, f:65.0",
+                        description: "1) Set max insanity.\n2) Change insanity levels for when insanity modules kick in."
+                    ).Value,
+                    _expected: ['f', 'f', 'f', 'f']
+                 );
+
+                #endregion ===================================================[ Insanity Options ]====================================================
+
+                #region ====================================================[ Camera Leaning ]=====================================================
+
+                config.CreateShelf(
+                    _name: "CL",
+                    _keys: "Enabled, Max, Threshold, Reset, Invert",
+                    _items: _config.Bind
+                    (
+                        section: "Camera Leaning",
+                        key: "Camera Leaning Config",
+                        defaultValue: "b:true, f:35.0, f:35.0, f:5.0, b:false",
+                        description: "1) Toggle on and off the lean module. This will completely remove leaning from the mod.\n2) Max amount of lean the camera can lean to.\n3) How fast the mouse has to move before the lean is applied.\n4) How fast the lerp should take"
+                    ).Value,
+                    _expected: ['b', 'f', 'f', 'f', 'b']
+                 );
+
+                config.CreateShelf(
+                    _name: "CL_EX",
+                    _keys: "Default, Sprint, Stamina, Fear, Insanity, InsanityVal, Day, Daymode",
+                    _items: _config.Bind
+                    (
+                        section: "Camera Leaning Multiplier",
+                        key: "Camera Leaning Config",
+                        defaultValue: "f:0.05, f:0.05, f:25.0, f:0.05, f:0.05, f:15.0, f:0.05, i:2",
+                        description: "To even understand what the fuck is happening you've got to read the documentation / code on my github..."
+                    ).Value,
+                    _expected: ['f', 'f', 'f', 'f', 'f', 'f', 'f', 'i']
+                 );
+
+                #endregion ====================================================[ Camera Leaning ]=====================================================
+
+                #region =======================================================[ Fake Items ]=======================================================
+
+                config.CreateShelf(
+                    _name: "FI",
+                    _keys: "Enabled, Min, Max, Radius",
+                    _items: _config.Bind
+                    (
+                        section: "Fake Items",
+                        key: "Fake Items Config",
+                        defaultValue: "b:true, i:1, i:3, f:25.0",
+                        description: "1) Toggle on and off the fake items module. This will completely remove fake item hallucinations from the mod.\n2) Minimum amount of fake items that will spawn.\n3) Maximum amount of fake items that will spawn.\n4) Radius the item will spawn in."
+                    ).Value,
+                    _expected: ['b', 'i', 'i', 'f']
+                 );
+
+                config.CreateShelf(
+                    _name: "FI_EX",
+                    _keys: "Respawning, Delay, Log, Kickin",
+                    _items: _config.Bind
+                    (
+                        section: "Fake Items",
+                        key: "Fake Items Extra",
+                        defaultValue: "b:true, f:70.0, b:false, i:1",
+                        description: "1)Allow items to respawn.\n2) Time between respawns ± rnd(5.0f).\n3) Log all items to in-game console when ship has landed."
+                    ).Value,
+                    _expected: ['b', 'f', 'b', 'i']
+                 );
+
+                config.CreateBox(
+                    _name: "FI_BL",
+                    _items: _config.Bind
+                    (
+                        section: "Fake Items",
+                        key: "Fake Items Blacklist",
+                        defaultValue: "",
+                        description: "Put the items name here separated by ','."
+                    ).Value,
+                    _expected: ['s']
+                );
+
+                #endregion =======================================================[ Fake Items ]=======================================================
+
+                #region ======================================================[ Camera Shake ]======================================================
+
+                config.CreateShelf(
+                    _name: "CS",
+                    _keys: "Enabled, Lvl2, Lvl3",
+                    _items: _config.Bind
+                    (
+                        section: "Camera Shake",
+                        key: "Camera Shake Config",
+                        defaultValue: "b:true, f:0.05, f:0.15",
+                        description: "1) Toggle on and off the camera shake module. This will completely remove any added camera shaking from the mod.\n2) Wobble amount when hitting lvl2 and lvl3 insanity."
+                    ).Value
+                 );
+
+                #endregion ======================================================[ Camera Shake ]======================================================
+            });
+
+            Debug.LogError(config);
+        }
+    }
+}

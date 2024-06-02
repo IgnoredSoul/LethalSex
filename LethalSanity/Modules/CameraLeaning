@@ -1,0 +1,78 @@
+﻿using UnityEngine;
+using LethalSex_Core;
+using GameNetcodeStuff;
+using UnityEngine.InputSystem;
+
+namespace LethalSanity.Modules
+{
+    internal class CameraLeaning : LethalModule
+    {
+        /// <summary>
+        /// Instance of the monobehaviour
+        /// </summary>
+        public static CameraLeaning instance { get; private set; }
+
+        /// <summary>
+        /// Instance of the LethalModule
+        /// </summary>
+        public static LethalModule module { get; set; }
+
+        public override void OnRegister()
+        {
+            if (!(bool)Config.config["CL"]["Enabled"]) Main.mod.UnregisterModule(this);
+        }
+
+        /// <summary>
+        /// When the local player component is initiated, assign and create a new instance of the component onto the camera
+        /// </summary>
+        /// <param name="_LocalPlayer"></param>
+        public override void OnLocalPlayerStart(PlayerControllerB _LocalPlayer) => instance = _LocalPlayer.gameplayCamera.gameObject.GetOrAddComponent<CameraLeaning>();
+
+        /// <summary>
+        /// Update each frame and calculate the camera lean rotation based on the mouse movement and other factors that multiply the leaning
+        /// </summary>
+        private void Update()
+        {
+            if (!LocalPlayer.Player) return;
+
+            Vector3 eulerAngles = LocalPlayer.Camera.transform.localRotation.eulerAngles;
+            Vector2 vector = Mouse.current.delta.ReadValue();
+
+            if (!LocalPlayer.IsMenuOpen && !LocalPlayer.IsTermOpen && (vector.x >= (float)Config.config["CL"]["Threshold"]) || vector.x <= -(float)Config.config["CL"]["Threshold"])
+            {
+                float multiplier = (float)Config.config["CL_EX"]["Default"];
+                if (LocalPlayer.PlayerController.isSprinting)
+                    multiplier += (float)Config.config["CL_EX"]["Sprint"];
+                if (StartOfRound.Instance.fearLevel >= 0.4f)
+                    multiplier += (float)Config.config["CL_EX"]["Fear"];
+                if (LocalPlayer.Insanity >= 60f)
+                    multiplier += (float)Config.config["CL_EX"]["Insanity"];
+                if ((int)TimeOfDay.Instance.dayMode >= (int)Config.config["CL_EX"]["Daymode"])
+                    multiplier += (float)Config.config["CL_EX"]["Day"];
+
+                if ((bool)Config.config["CL"]["Invert"])
+                {
+                    // Check if its negative or not before multipling then clamp to (CONFIG.MAXLEAN)
+                    eulerAngles.z -= Mathf.Clamp(multiplier * ((vector.x < 0f) ? (vector.x - (float)Config.config["CL"]["Threshold"]) : (vector.x + (float)Config.config["CL"]["Threshold"])), -(float)Config.config["CL"]["Max"], (float)Config.config["CL"]["Max"]);
+                }
+                else
+                {
+                    // Check if its negative or not before multipling then clamp to (CONFIG.MAXLEAN)
+                    eulerAngles.z += Mathf.Clamp(multiplier * ((vector.x < 0f) ? (vector.x - (float)Config.config["CL"]["Threshold"]) : (vector.x + (float)Config.config["CL"]["Threshold"])), -(float)Config.config["CL"]["Max"], (float)Config.config["CL"]["Max"]);
+                }
+            }
+            else
+                eulerAngles.z = 0f;
+
+            // Do the leaning shit
+            ConsoleManager.Warn($"Angle: {eulerAngles}");
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(eulerAngles), (float)Config.config["CL"]["Reset"] * Time.deltaTime);
+        }
+
+        private void OnDestroy() => base.Destroyed();
+
+        private void OnDisable() => base.Disabled();
+
+        private void OnEnable() => base.Enabled();
+    }
+}

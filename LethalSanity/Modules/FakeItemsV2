@@ -1,0 +1,208 @@
+﻿using System;
+using UnityEngine;
+using LethalSex_Core;
+using System.Collections;
+using LethalSex_Core.Modules;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace LethalSanity.Modules
+{
+    internal class FakeItemsV2 : LethalModule
+    {
+        /// <summary>
+        /// Instance of the class.
+        /// </summary>
+        public static FakeItemsV2 instance { get; private set; }
+
+        /// <summary>
+        /// Instance of the component.
+        /// </summary>
+        public static FakeItemsV2 component { get; private set; }
+
+        private GameObject ComponentHandler { get; set; }
+        private IEnumerator SpawningCoroutine { get; set; }
+
+        /// <summary>
+        /// Handles the fake items spawn interval
+        /// </summary>
+        private float loopInterval { get; set; }
+
+        /// <summary>
+        /// Handles how many fake items should spawn in a random range
+        /// </summary>
+        private Tuple<int, int> fakeGroupRange { get; set; }
+
+        /// <summary>
+        /// Handles how far the fake items should spawn from the player
+        /// </summary>
+        private Tuple<int, int> fakeSpawnRange { get; set; }
+
+        private List<GameObject> fakes = new();
+
+        public override void OnRegister() => instance = this;
+
+        /// <summary>
+        /// When the ship lands, make a gameObject to handle fake item spawning.
+        /// <br/>
+        /// The gameObject automatically gets destroyed either when the player dies or starting a new level.
+        /// </summary>
+        public override void OnShipLand() => component = (ComponentHandler = new GameObject("FakeItems_Handler")).AddComponent<FakeItemsV2>();
+
+        private void Start()
+        {
+            StartCoroutine(SpawnTimer());
+
+            LocalPlayer.MaxInsanity = 65;
+        }
+
+        private void CalcValues()
+        {
+            // Reset values
+            loopInterval = 0;
+            fakeGroupRange = Tuple.Create(0, 0);
+            fakeSpawnRange = Tuple.Create(0, 0);
+
+            // Add values based on insanity levels
+            switch (LocalPlayer.Insanity)
+            {
+                case float n when (n >= 60):
+                    loopInterval += 20;
+                    fakeGroupRange = Tuple.Create(fakeGroupRange.Item1 + 2, fakeGroupRange.Item2 + 3);
+                    fakeSpawnRange = Tuple.Create(fakeSpawnRange.Item1 + 4, fakeSpawnRange.Item2 + 7);
+                    break;
+
+                case float n when (n >= 45):
+                    loopInterval += 35;
+                    fakeGroupRange = Tuple.Create(fakeGroupRange.Item1 + 1, fakeGroupRange.Item2 + 3);
+                    fakeSpawnRange = Tuple.Create(fakeSpawnRange.Item1 + 7, fakeSpawnRange.Item2 + 10);
+                    break;
+
+                case float n when (n >= 25):
+                    loopInterval += 45;
+                    fakeGroupRange = Tuple.Create(fakeGroupRange.Item1 + 1, fakeGroupRange.Item2 + 2);
+                    fakeSpawnRange = Tuple.Create(fakeSpawnRange.Item1 + 15, fakeSpawnRange.Item2 + 18);
+                    break;
+
+                default:
+                    loopInterval += 60;
+                    fakeGroupRange = Tuple.Create(fakeGroupRange.Item1 + 1, fakeGroupRange.Item2 + 1);
+                    fakeSpawnRange = Tuple.Create(fakeSpawnRange.Item1 + 17, fakeSpawnRange.Item2 + 26);
+                    break;
+            }
+
+            // Add values based on health
+            switch (LocalPlayer.PlayerController.health)
+            {
+                case int n when (n >= 60):
+                    loopInterval += 10;
+                    fakeGroupRange = Tuple.Create(fakeGroupRange.Item1 + 1, fakeGroupRange.Item2 + 2);
+                    fakeSpawnRange = Tuple.Create(fakeSpawnRange.Item1 + 2, fakeSpawnRange.Item2 + 4);
+                    break;
+
+                case int n when (n >= 45):
+                    loopInterval += 5;
+                    fakeGroupRange = Tuple.Create(fakeGroupRange.Item1 + 1, fakeGroupRange.Item2 + 2);
+                    fakeSpawnRange = Tuple.Create(fakeSpawnRange.Item1 + 4, fakeSpawnRange.Item2 + 6);
+                    break;
+
+                case int n when (n >= 25):
+                    loopInterval += 1;
+                    fakeGroupRange = Tuple.Create(fakeGroupRange.Item1 + 1, fakeGroupRange.Item2 + 2);
+                    fakeSpawnRange = Tuple.Create(fakeSpawnRange.Item1 + 5, fakeSpawnRange.Item2 + 8);
+                    break;
+
+                default:
+                    loopInterval += 0;
+                    fakeGroupRange = Tuple.Create(fakeGroupRange.Item1 + 0, fakeGroupRange.Item2 + 1);
+                    fakeSpawnRange = Tuple.Create(fakeSpawnRange.Item1 + 9, fakeSpawnRange.Item2 + 15);
+                    break;
+            }
+
+            loopInterval = 15;
+            fakeGroupRange = Tuple.Create(15, 16);
+            fakeSpawnRange = Tuple.Create(2, 4);
+
+            ConsoleManager.Log($"Interval: {loopInterval} | Group: {fakeGroupRange} | Range: {fakeSpawnRange} | Insanity: {LocalPlayer.Insanity} | Health: {LocalPlayer.PlayerController.health}");
+        }
+
+        private IEnumerator SpawnTimer()
+        {
+            // Because the fucking update method happens after this?
+            yield return new WaitForSeconds(3.125f);
+
+            while (true)
+            {
+                CalcValues();
+
+                // If the (loopInterval) is 0 or less. Then we should break the loop.
+                ConsoleManager.Log(loopInterval);
+                if (loopInterval <= 0)
+                {
+                    ConsoleManager.Log("Loop interval unstable");
+                    yield break;
+                }
+                ConsoleManager.Log("Loop interval stable");
+
+                // If the play is not inside the factory, then dont bother. Retry in after (15 ± (random offset)) seconds.
+                bool v = SpawnHandler();
+
+                // Wait after (15 ± 5) seconds so it's not always the same every time.
+                if (v) yield return new WaitForSeconds(Mathf.Clamp((loopInterval + NumberUtils.Next(-5, 5)), 0, float.MaxValue));
+
+                // Loop after ((x) interval ± (random offset)) seconds so it's not always the same every time.
+                else yield return new WaitForSeconds(Mathf.Clamp((15 + NumberUtils.Next(-5, 5)), 0, float.MaxValue));
+            }
+        }
+
+        private async Task<bool> SpawnHandler()
+        {
+            // Basically while the code is doing some kind of intensive load, we dont want to block the main thread.
+            return await Task.Run(() =>
+            {
+                //if (!LocalPlayer.PlayerController.isInsideFactory) return false;
+                return Extensions.TryCatch("Open loop.", () =>
+                {
+                    // Delete all existing fake items
+                    fakes.ForEach((item) => Destroy(item));
+                    fakes.Clear();
+
+                    ConsoleManager.Log("Spawning items...");
+
+                    // Choose a random amount of items to spawn and loop.
+                    for (int i = 0; i < NumberUtils.Next(fakeGroupRange.Item1, fakeGroupRange.Item2); i++)
+                    {
+                        Extensions.TryCatch("Spawning scrap.", () =>
+                        {
+                            // Choose a random scrap
+                            SpawnableItemWithRarity scrap = RoundManager.Instance.currentLevel.spawnableScrap[NumberUtils.NextL(RoundManager.Instance.currentLevel.spawnableScrap.Count)];
+
+                            // Choose a random position
+                            Vector3 position = (Extensions.GetRandomNavMeshPositionInRadiusSpherical(LocalPlayer.Player.transform.position, fakeSpawnRange.Item1, fakeSpawnRange.Item2) + Vector3.up * scrap.spawnableItem.verticalOffset);
+
+                            // Instantiate new object
+                            GameObject itemObject = Instantiate(scrap.spawnableItem.spawnPrefab, position, Quaternion.identity);
+
+                            // Put "Fake_" in front
+                            itemObject.name = $"Fake_{itemObject.name}_{itemObject.transform.position}";
+                            var a = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                            a.transform.localScale = new Vector3(1, 100, 1);
+                            a.transform.SetParent(itemObject.transform);
+
+                            fakes.Add(itemObject);
+                        });
+                    }
+
+                    ConsoleManager.Log($"Fake Items: {fakes.Count} | {string.Join(",", fakes.Select(i => i.transform.position.y.ToString()))}");
+                });
+            });
+        }
+
+        private void OnEnable() => base.Enabled();
+
+        private void OnDisable() => base.Disabled();
+
+        private void OnDestroy() => base.Destroyed();
+    }
+}

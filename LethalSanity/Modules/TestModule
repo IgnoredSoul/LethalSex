@@ -1,0 +1,77 @@
+﻿using GameNetcodeStuff;
+using LethalSex_Core;
+using LethalSex_Core.Modules;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
+
+namespace LethalSanity.Modules
+{
+    internal class TestModule : LethalModule
+    {
+        public static TestModule instance { get; private set; }
+        public static TestModule component { get; private set; }
+        public static bool shouldTakeDamage { get; private set; }
+
+        public override void OnRegister()
+        {
+            ConsoleManager.Log(
+                $"Test module on register called." +
+                $"Also hi there stranger :3  This is a WIP hallucination, not a cheat god mode bullshit. It's a surprise uwu"
+            );
+
+            Main.mls.LogInfo($"Modules: {string.Join(", ", Mod.Modules.ToList().Select(m => m.ModuleName))}");
+            Main.mls.LogInfo($"{Module.ModuleName} | {Module.Mod} | {Module.Mod.Name}");
+            instance = this;
+        }
+
+        public override void OnLocalPlayerStart(PlayerControllerB _LocalPlayer)
+        {
+            Main.mls.LogInfo("Cuh");
+            LocalPlayer.Player.AddComponent<TestModule>();
+        }
+
+        public void Update()
+        {
+            if (Keyboard.current.kKey.wasPressedThisFrame)
+            {
+                ConsoleManager.Log("Damaging player for 5");
+                LocalPlayer.PlayerController.DamagePlayer(5);
+            }
+
+            if (Keyboard.current.lKey.wasPressedThisFrame)
+            {
+                shouldTakeDamage = !shouldTakeDamage;
+                ConsoleManager.Log($"Should player take damage? {shouldTakeDamage}");
+            }
+
+            if (Keyboard.current.fKey.wasPressedThisFrame)
+            {
+                Extensions.TryCatch("Cock", () =>
+                {
+                    throw new System.Exception("uih");
+                });
+            }
+        }
+
+        public override bool OnDamagePlayer(ref int damageNumber, ref bool hasDamageSFX, ref bool callRPC, ref CauseOfDeath causeOfDeath, ref int deathAnimation, ref bool fallDamage, ref Vector3 force)
+        {
+            ConsoleManager.Log($"Player took {damageNumber}.");
+            ConsoleManager.Log($"Should player take damage?? {shouldTakeDamage}");
+            if (shouldTakeDamage)
+            {
+                damageNumber = 0;
+                ConsoleManager.Log("Negated.");
+                return false;
+            }
+            return true;
+        }
+
+        private void OnEnable() => base.Enabled();
+
+        private void OnDisable() => base.Disabled();
+
+        private void OnDestroy() => base.Destroyed();
+    }
+}

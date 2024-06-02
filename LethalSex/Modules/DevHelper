@@ -1,0 +1,49 @@
+﻿using GameNetcodeStuff;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace LethalSex_Core.Modules
+{
+    internal class DevHelper : LethalModule
+    {
+        public override void OnLocalPlayerStart(PlayerControllerB _LocalPlayer)
+        {
+            _LocalPlayer.gameObject.AddComponent<DevHelper>();
+        }
+
+        public static bool GodMode = false;
+
+        private void Update()
+        {
+            if (Keyboard.current.qKey.wasPressedThisFrame)
+            {
+                LocalPlayer.Player.transform.position = new UnityEngine.Vector3(-108.3062f, 2.9663f, -17.5213f);
+            }
+
+            if (Keyboard.current.uKey.wasPressedThisFrame)
+            {
+                GodMode = !GodMode;
+                ConsoleManager.Log($"GodMode: {GodMode}");
+            }
+
+            if (Keyboard.current.gKey.wasPressedThisFrame) LocalPlayer.PlayerController.DamagePlayer(5);
+        }
+
+        public override bool OnDamagePlayer(ref int damageNumber, ref bool hasDamageSFX, ref bool callRPC, ref CauseOfDeath causeOfDeath, ref int deathAnimation, ref bool fallDamage, ref Vector3 force)
+        {
+            ConsoleManager.Log($"Player took {damageNumber}.");
+            ConsoleManager.Log($"Should player take damage?? {!GodMode}");
+            if (GodMode)
+            {
+                damageNumber = 0;
+                callRPC = false;
+                fallDamage = false;
+                ConsoleManager.Log("Negated.");
+                return false;
+            }
+
+            ConsoleManager.Log("ehg");
+            return true;
+        }
+    }
+}

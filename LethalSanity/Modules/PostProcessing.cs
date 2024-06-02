@@ -1,222 +1,266 @@
-﻿using GameNetcodeStuff;
+﻿using UnityEngine;
 using LethalSex_Core;
-using System.Threading.Tasks;
-using UnityEngine;
+using GameNetcodeStuff;
 using UnityEngine.Rendering;
+using LethalSex_Core.Modules;
 using UnityEngine.Rendering.HighDefinition;
 
 namespace LethalSanity.Modules
 {
-    public class PostProcessing : LethalClass
-    {
-        internal static PostProcessing instance { get; private set; }
+	internal class PostProcessing : LethalModule
+	{
+		#region Vars
 
-        // When the player loads
-        public override void OnLocalPlayerStart(PlayerControllerB LocalPlayer) => instance = LocalPlayer.gameObject.GetOrAddComponent<PostProcessing>();
+		/// <summary>
+		/// Instance of the class
+		/// </summary>
+		public static PostProcessing instance { get; private set; }
 
-        private ColorAdjustments CAComp { get; set; }
-        private ChromaticAberration ChrAbComp { get; set; }
-        private DepthOfField DOFComp { get; set; }
-        private FilmGrain FilmGrainComp { get; set; }
-        private LensDistortion LensDistComp { get; set; }
-        private Vignette VignetteComp { get; set; }
-        private GameObject VolumeObject { get; set; }
-        private VolumeProfile VolumeProfile { get; set; }
+		/// <summary>
+		/// Instance of the monobehaviour
+		/// </summary>
+		public static PostProcessing component { get; private set; }
 
-        private bool InsanityLvl1 { get; set; }
-        private bool InsanityLvl2 { get; set; }
-        private bool InsanityLvl3 { get; set; }
+		/// <summary>
+		/// Instance of the volume object
+		/// </summary>
+		private GameObject VolumeObject { get; set; }
 
-        private async void Start()
-        {
-            // Wait till VolumeMain exists and clone it.
-            do
-            {
-                VolumeObject = Instantiate(
-                    GameObject.Find("Systems/Rendering/VolumeMain"),
-                    GameObject.Find("Systems/Rendering/VolumeMain").transform.parent
-                );
-                await Task.Delay(500);
-            } while (!VolumeObject);
+		/// <summary>
+		/// Instance of the volume profile
+		/// </summary>
+		private VolumeProfile VolumeProfile { get; set; }
 
-            // Rename object
-            VolumeObject.name = "LS-Volume";
+		#endregion Vars
 
-            // Make new VolumeProfilet
-            VolumeProfile = new VolumeProfile();
+		/// <summary>
+		/// When registering the module, check the config to see if the user wants this module disabled
+		/// </summary>
+		public override void OnRegister() => instance = this;
 
-            // Name new VolumeProfile
-            VolumeProfile.name = "LS-VolumeProfile";
+		/// <summary>
+		/// When the local player initializes
+		/// </summary>
+		/// <param name="_LocalPlayer"></param>
+		public override void OnShipLand()
+		{
+			component = InsanityHandler.InsanityHandlerObj.AddComponent<PostProcessing>();
+		}
 
-            // Assign profile
-            VolumeObject.GetComponentInChildren<Volume>().profile = VolumeProfile;
+		private void Start()
+		{
+			VolumeObject = Instantiate(
+				GameObject.Find("Systems/Rendering/VolumeMain"),
+				GameObject.Find("Systems/Rendering/VolumeMain").transform.parent);  // Make new Volume Object
 
-            // Set max insanity
-            LocalPlayer.MaxInsanity = 65f;
+			InsanityHandler.onInsanityLevel1Reached.Add(() =>
+			{
+				HUDManager.Instance.ShakeCamera(ScreenShakeType.Small);
+			});                  // Make a indicator for when player is going insane.
 
-            // Add all effects to profile
-            ChrAbComp = VolumeProfile.Add<ChromaticAberration>(); ChrAbComp.name = "LS-ChrAbComp";
-            LensDistComp = VolumeProfile.Add<LensDistortion>(); LensDistComp.name = "LS-LensDistComp";
-            FilmGrainComp = VolumeProfile.Add<FilmGrain>(); FilmGrainComp.name = "LS-FilmGrainComp";
-            VignetteComp = VolumeProfile.Add<Vignette>(); VignetteComp.name = "LS-VignetteComp"; VignetteComp.opacity.value = 0.5f; VignetteComp.smoothness.value = 25f;
-            DOFComp = VolumeProfile.Add<DepthOfField>(); DOFComp.name = "LS-DOFComp"; DOFComp.farFocusStart.Override(2000); DOFComp.farFocusEnd.Override(2000);
-            CAComp = VolumeProfile.Add<ColorAdjustments>(); CAComp.name = "LS-CAComp";
-        }
+			VolumeObject.name = "LS-Volume";                                        // Rename object
 
-        private void LateUpdate()
-        {
-            // Just to make sure no errors arise
-            if (!LocalPlayer.PlayerController) return;
+			VolumeProfile = new VolumeProfile();                                    // Make new VolumeProfilet
 
-            #region Level 1
+			VolumeProfile.name = "LS-VolumeProfile";                                // Name new VolumeProfile
 
-            // When:
-            //		Insanity is less than 45
-            //		Insanity Level 1 has been checked
-            if (LocalPlayer.Insanity < 35 && InsanityLvl1)
-            {
-                // Set this level of insanity to false
-                InsanityLvl1 = false;
+			VolumeObject.GetComponentInChildren<Volume>().profile = VolumeProfile;  // Assign profile
 
-                // Apply override's
-                Extensions.SmoothIncrementValue("FilmGrain", FilmGrainComp.intensity.Override, FilmGrainComp.intensity.value, 0f, 0.75f);
-                Extensions.SmoothIncrementValue("Vignette", VignetteComp.intensity.Override, VignetteComp.intensity.value, 0.1f, 0.75f);
+			/*
+				Do config options for toggling on and off certain effects.
+			*/
 
-                // Log to console
-                ConsoleManager.Log("R; Stage: 1 | SL: Ambience");
-            }
+			MakeVignette();
+			MakeFilmGrain();
+			MakeChrAb();
+			MakeLensDist();
+			MakeDOF();
+			MakeCamAdj();
 
-            // When:
-            //		Insanity is greater than 35
-            //		Insanity Level 1 has not been checked
-            if (LocalPlayer.Insanity >= 35 && !InsanityLvl1)
-            {
-                // Set this level of insanity to true
-                InsanityLvl1 = true;
+			LocalPlayer.Insanity = 25;
+		}
 
-                // Apply override's
-                Extensions.SmoothIncrementValue("FilmGrain", FilmGrainComp.intensity.Override, FilmGrainComp.intensity.value, 1.6f, 15f);
-                Extensions.SmoothIncrementValue("Vignette", VignetteComp.intensity.Override, VignetteComp.intensity.value, 0.5f, 25f);
+		/// <summary>
+		/// Prepares the Vignette effect.
+		/// </summary>
+		private void MakeVignette()
+		{
+			// Set up Vignette effect
+			Vignette VignetteComp = VolumeProfile.Add<Vignette>();
+			VignetteComp.smoothness.value = 1;
+			VignetteComp.roundness.value = 0.842f;
+			VignetteComp.name = "LS-VignetteComp";
 
-                // Log to console
-                ConsoleManager.Log("A; Stage: 1 | SL: Ambience");
+			// Set up Vignette on and off actions
+			int lvl = NumberUtils.Next(1, 2);
+			InsanityHandler.SetAction(lvl, () =>
+			{
+				float val = NumberUtils.NextF(0.45f, 0.6f);
+				float time = NumberUtils.NextF(10f, 25f);
+				ConsoleManager.Log($"Applying Vignette ({val}/{time})");
+				Extensions.SmoothIncrementValue("Vignette", VignetteComp.intensity.Override, VignetteComp.intensity.value, val, time);
+			}, () =>
+			{
+				float time = NumberUtils.NextF(0.5f, 2);
+				ConsoleManager.Log($"Resetting Vignette (0/{time})");
+				Extensions.SmoothIncrementValue("Vignette", VignetteComp.intensity.Override, VignetteComp.intensity.value, 0, time);
+			});
+			ConsoleManager.Log($"Vignette applies at lvl: {lvl}");
+		}
 
-                // Shake the camera slightly
-                HUDManager.Instance.ShakeCamera(ScreenShakeType.Small);
-            }
+		/// <summary>
+		/// Prepares the Film Grain effect.
+		/// </summary>
+		private void MakeFilmGrain()
+		{
+			// Set up Film Grain effect
+			FilmGrain FilmGrainComp = VolumeProfile.Add<FilmGrain>();
+			FilmGrainComp.name = "LS-FilmGrainComp";
 
-            #endregion Level 1
+			// Set up Film Grain on and off actions
+			int lvl = NumberUtils.Next(1, 2);
+			InsanityHandler.SetAction(lvl, () =>
+			{
+				float val = NumberUtils.NextF(0.5f, 1f);
+				float time = NumberUtils.NextF(10, 20);
+				ConsoleManager.Log($"Applying FilmGrain ({val}/{time})");
+				Extensions.SmoothIncrementValue("FilmGrain", FilmGrainComp.intensity.Override, FilmGrainComp.intensity.value, val, time);
+			}, () =>
+			{
+				float time = NumberUtils.NextF(0.5f, 2);
+				ConsoleManager.Log($"Resetting FilmGrain (0/{time})");
+				Extensions.SmoothIncrementValue("FilmGrain", FilmGrainComp.intensity.Override, FilmGrainComp.intensity.value, 0f, time);
+			});
+			ConsoleManager.Log($"Film Grain applies at lvl: {lvl}");
+		}
 
-            /*
-             * 26/12/23
-             * At level two, the fake bracken will spawn. It will not despawn ever after that.
-             * I may make the bracken increase in speed and what not based on sanity.
-            */
+		/// <summary>
+		/// Prepares the Chromatic Aberration effect.
+		/// </summary>
+		private void MakeChrAb()
+		{
+			// Set up Chromatic Aberration effect
+			ChromaticAberration ChrAbComp = VolumeProfile.Add<ChromaticAberration>();
+			ChrAbComp.name = "LS-ChrAbComp";
 
-            #region Level 2
+			// Set up Chromatic Aberration on and off actions
+			int lvl = NumberUtils.Next(2, 3);
+			InsanityHandler.SetAction(lvl, () =>
+			{
+				float val = NumberUtils.NextF(1f, 2f);
+				float time = NumberUtils.NextF(10, 20);
+				ConsoleManager.Log($"Applying Chromatic Aberation ({val}/{time})");
+				Extensions.SmoothIncrementValue("ChrAb", ChrAbComp.intensity.Override, ChrAbComp.intensity.value, NumberUtils.NextF(0.5f, 1.5f), NumberUtils.NextF(10, 20));
+			}, () =>
+			{
+				float time = NumberUtils.NextF(0.5f, 2);
+				ConsoleManager.Log($"Resetting Chromatic Aberration (0/{time})");
+				Extensions.SmoothIncrementValue("ChrAb", ChrAbComp.intensity.Override, ChrAbComp.intensity.value, 0f, NumberUtils.NextF(0.5f, 2));
+			});
 
-            // When:
-            //		Insanity is less than 45
-            //		Insanity Level 2 has been checked
-            if (LocalPlayer.Insanity < 45 && InsanityLvl2)
-            {
-                // Set this level of insanity to false
-                InsanityLvl2 = false;
+			ConsoleManager.Log($"Chromatic Aberration applies at lvl: {lvl}");
+		}
 
-                // Apply override's
-                Extensions.SmoothIncrementValue("ChrAb", ChrAbComp.intensity.Override, ChrAbComp.intensity.value, 0f, 0.75f);
-                Extensions.SmoothIncrementValue("LensDist", LensDistComp.intensity.Override, LensDistComp.intensity.value, 0f, 0.75f);
+		/// <summary>
+		/// Prepares the Lens Distortion effect.
+		/// </summary>
+		private void MakeLensDist()
+		{
+			// Set up Lens Distortion effect.
+			LensDistortion LensDistComp = VolumeProfile.Add<LensDistortion>();
+			LensDistComp.name = "LS-LensDistComp";
 
-                // Change the config for the wobble effect
-                CameraShake.instance.wobbleAmount = 0;
+			// Set up Lens Distortion on and off actions
+			int lvl = NumberUtils.Next(2, 3);
+			InsanityHandler.SetAction(lvl, () =>
+			{
+				float val = NumberUtils.NextF(0.4f, 0.6f);
+				float time = NumberUtils.NextF(20, 30);
+				ConsoleManager.Log($"Applying Lens Distortion ({val}/{time})");
+				Extensions.SmoothIncrementValue("LensDist", LensDistComp.intensity.Override, LensDistComp.intensity.value, val, time);
+			}, () =>
+			{
+				float time = NumberUtils.NextF(0.5f, 2);
+				ConsoleManager.Log($"Resetting Lens Distortion (0/{time})");
+				Extensions.SmoothIncrementValue("LensDist", LensDistComp.intensity.Override, LensDistComp.intensity.value, 0, time);
+			});
 
-                // Log to console
-                ConsoleManager.Log("R; Stage: 2 | SL: Enemy, Laughing | SI: 20 | SP: 5 | WA: 0");
-            }
+			ConsoleManager.Log($"Lens Distortion applies at lvl: {lvl}");
+		}
 
-            // When:
-            //		Insanity is greater than 45
-            //		Insanity Level 2 has not been checked
-            if (LocalPlayer.Insanity >= 45 && !InsanityLvl2)
-            {
-                // Set this level of insanity to true
-                InsanityLvl2 = true;
+		/// <summary>
+		/// Prepares the Depth of Field effect.
+		/// </summary>
+		private void MakeDOF()
+		{
+			// Set up Depth of Field effect
+			DepthOfField DOFComp = VolumeProfile.Add<DepthOfField>();
+			DOFComp.farFocusStart.Override(2000);
+			DOFComp.farFocusEnd.Override(2000);
+			DOFComp.name = "LS-DOFComp";
 
-                // Apply override's
-                Extensions.SmoothIncrementValue("ChrAb", ChrAbComp.intensity.Override, ChrAbComp.intensity.value, 1f, 20f);
-                Extensions.SmoothIncrementValue("LensDist", LensDistComp.intensity.Override, LensDistComp.intensity.value, 0.55f, 27f);
+			// Set up Depth of Field on and off actions
+			int lvl = NumberUtils.Next(2, 3);
+			InsanityHandler.SetAction(lvl, () =>
+			{
+				float val = NumberUtils.NextF(3, 8);
+				float time = NumberUtils.NextF(10, 17);
+				ConsoleManager.Log($"Applying Depth of Field (Start) ({val}/{time})");
+				Extensions.SmoothIncrementValue("DOFStart", DOFComp.farFocusStart.Override, DOFComp.farFocusStart.value, val, time);
 
-                // Start the wobble effect and configure it
-                CameraShake.instance.wobbleAmount = 0.05f;
-                CameraShake.instance.HandleWobble();
+				float val_ = NumberUtils.NextF(10, 15);
+				float time_ = NumberUtils.NextF(18, 25);
+				ConsoleManager.Log($"Applying Depth of Field (End) ({val_}/{time_})");
+				Extensions.SmoothIncrementValue("DOFEnd", DOFComp.farFocusEnd.Override, DOFComp.farFocusEnd.value, val_, time_);
+			}, () =>
+			{
+				float time = NumberUtils.NextF(10, 13);
+				ConsoleManager.Log($"Resseting Depth of Field (Start) (2000/{time})");
+				Extensions.SmoothIncrementValue("DOFStart", DOFComp.farFocusStart.Override, DOFComp.farFocusStart.value, 2000f, time);
 
-                // Log to console
-                ConsoleManager.Log("A; Stage: 2 | SL: Enemy, Laughing | SI: 15 | SP: 15");
-            }
+				float time_ = NumberUtils.NextF(13, 16);
+				ConsoleManager.Log($"Resseting Depth of Field (End) (2000/{time_})");
+				Extensions.SmoothIncrementValue("DOFEnd", DOFComp.farFocusEnd.Override, DOFComp.farFocusEnd.value, 2000, time_);
+			});
 
-            #endregion Level 2
+			ConsoleManager.Log($"Depth Of Field applies at lvl: {lvl}");
+		}
 
-            #region Level 3
+		/// <summary>
+		/// Prepares the Color Adjustments effect.
+		/// </summary>
+		private void MakeCamAdj()
+		{
+			// Set up Color Adjustments effect.
+			ColorAdjustments CAComp = VolumeProfile.Add<ColorAdjustments>();
+			CAComp.name = "LS-CAComp";
 
-            // When:
-            //		Insanity is less than 65
-            //		Insanity Level 3 has been checked
-            if (LocalPlayer.Insanity < 65 && InsanityLvl3)
-            {
-                // Set this level of insanity to false
-                InsanityLvl3 = false;
+			// Set up Color Adjustments on and off actions
+			int lvl = NumberUtils.Next(2, 3);
+			InsanityHandler.SetAction(lvl, () =>
+			{
+				float val = NumberUtils.NextF(50, 70);
+				float time = NumberUtils.NextF(18, 28);
+				ConsoleManager.Log($"Applying Color Adjustments ({val}/{time})");
+				Extensions.SmoothIncrementValue("CA", CAComp.saturation.Override, CAComp.saturation.value, -val, time);
+			}, () =>
+			{
+				float time = NumberUtils.NextF(0.5f, 2);
+				ConsoleManager.Log($"Resseting Color Adjustments (0/{time})");
+				Extensions.SmoothIncrementValue("CA", CAComp.saturation.Override, CAComp.saturation.value, 0, time);
+			});
 
-                // Apply override's
-                Extensions.SmoothIncrementValue("DOFStart", DOFComp.farFocusStart.Override, DOFComp.farFocusStart.value, 2000, 0.75f);
-                Extensions.SmoothIncrementValue("DOFEnd", DOFComp.farFocusEnd.Override, DOFComp.farFocusEnd.value, 2000, 0.75f);
-                Extensions.SmoothIncrementValue("CA", CAComp.saturation.Override, CAComp.saturation.value, 0f, 0.75f);
-                Extensions.SmoothIncrementValue("LensDist", LensDistComp.intensity.Override, LensDistComp.intensity.value, 0.3f, 17f);
+			ConsoleManager.Log($"Color Adjustments applies at lvl: {lvl}");
+		}
 
-                // Change the config for the wobble effect
-                CameraShake.instance.wobbleAmount = 0.05f;
+		#region Unity Calls
 
-                // Log to console
-                ConsoleManager.Log("R; Stage: 3 | SL: Knocking | SI: 15 | SP: 15 | WA: 0.05f");
-            }
+		private void OnDestroy() => base.Destroyed();
 
-            // When:
-            //		Insanity is greater than 65
-            //		Insanity Level 3 has not been checked
-            if (LocalPlayer.Insanity >= 65 && !InsanityLvl3)
-            {
-                // Set this level of insanity to true
-                InsanityLvl3 = true;
+		private void OnDisable() => base.Disabled();
 
-                // Apply override's
-                Extensions.SmoothIncrementValue("DOFStart", DOFComp.farFocusStart.Override, DOFComp.farFocusStart.value, 5, 20f);
-                Extensions.SmoothIncrementValue("DOFEnd", DOFComp.farFocusEnd.Override, DOFComp.farFocusEnd.value, 25, 20f);
-                Extensions.SmoothIncrementValue("CA", CAComp.saturation.Override, CAComp.saturation.value, -65f, 25f);
+		private void OnEnable() => base.Enabled();
 
-                // Change the config for the wobble effect
-                CameraShake.instance.wobbleAmount = 0.15f;
-
-                // Log to console
-                ConsoleManager.Log("A; Stage: 3 | SL: Knocking | SI: 5 | SP: 25 | WA: 0.15f");
-            }
-
-            #endregion Level 3
-
-            /*
-             * 2/12/23
-             * Maybe some 30 second timer will start when at level 3?
-             * Vision will fade out and will slowly die?
-             *
-             * 22/2/24
-             * ehh maybe not, single player would be almost impossible
-             * but adds danger to being alone...
-             * IM SO CONFLICTED AAAAAAAAAAAAAAA
-            */
-        }
-
-        private void OnDestroy() => base.Destroyed();
-
-        private void OnDisable() => base.Disabled();
-
-        private void OnEnable() => base.Enabled();
-    }
+		#endregion Unity Calls
+	}
 }

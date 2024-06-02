@@ -1,0 +1,164 @@
+﻿using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+using Object = UnityEngine.Object;
+
+namespace LethalSex_Core.Modules
+{
+    public class ConfigController : MonoBehaviour
+    {
+        public GameObject MainMenu;
+        public static GameObject mainMenu;
+        public GameObject ModSelectPrefab;
+        public static GameObject modSelectPrefab;
+        public GameObject ExpandablePrefab;
+        public static GameObject expandablePrefab;
+        public GameObject TopSect;
+        public static GameObject topSect;
+        public GameObject RangePrefab;
+        public static GameObject rangePrefab;
+
+        public Sprite RArrow;
+        public static Sprite Rarrow;
+        public Sprite DArrow;
+        public static Sprite Darrow;
+
+        private void Start()
+        {
+            mainMenu = MainMenu;
+            modSelectPrefab = ModSelectPrefab;
+            expandablePrefab = ExpandablePrefab;
+            rangePrefab = RangePrefab;
+            topSect = TopSect;
+            Rarrow = RArrow;
+            Darrow = DArrow;
+
+            ConfigEntry cfg = new ConfigEntry("Test Mod");
+            Expandable exp = new Expandable(cfg, "Example");
+            /*        Range rn = new Range(exp, "Range");
+                    rn.SetValues(0, 10, 0, 5, 1, false);
+                    rn.SetAction((min, max) =>
+                    {
+                    });*/
+        }
+
+        public ConfigEntry CreateEntry(object _name) => new ConfigEntry(_name);
+
+        public Expandable CreateExpandable(ConfigEntry _entry, object _name) => new Expandable(_entry, _name);
+    }
+
+    public class ConfigEntry
+    {
+        public ConfigEntry(object _modName)
+        {
+            // Make mod holder
+            ModHolder = new GameObject($"{_modName}_Holder"); ModHolder.transform.SetParent(ConfigController.mainMenu.transform.parent);
+            ModHolder.SetActive(false);
+            VerticalLayoutGroup v = ModHolder.AddComponent<VerticalLayoutGroup>();
+            v.padding.bottom = 5;
+            v.spacing = 5;
+
+            // Make new entry
+            GameObject ModSelection = Object.Instantiate(ConfigController.modSelectPrefab, ConfigController.mainMenu.transform);
+            ModSelection.name = $"{_modName}_ConfigEntry";
+
+            // Set ConfigMenu Text
+            TextMeshProUGUI ConfigText = ModSelection.GetComponentInChildren<TextMeshProUGUI>();
+            ConfigText.text = _modName.ToString();
+            Button btn = ModSelection.GetComponent<Button>();
+
+            btn.onClick.AddListener(() =>
+            {
+                ConfigController.mainMenu.SetActive(false);
+                ModHolder.SetActive(true);
+                ConfigController.topSect.gameObject.SetActive(true);
+                ConfigController.topSect.GetComponentInChildren<TextMeshProUGUI>().text = $"{_modName}";
+
+                ConfigController.topSect.GetComponentInChildren<Button>().onClick.AddListener(() =>
+                {
+                    ConfigController.mainMenu.SetActive(true);
+                    ModHolder.SetActive(false);
+                    ConfigController.topSect.gameObject.SetActive(false);
+                });
+            });
+        }
+
+        public GameObject ModHolder { get; private set; }
+    }
+
+    public class Expandable
+    {
+        public Expandable(ConfigEntry _entry, object _name)
+        {
+            instance = this;
+
+            // Create new expandable
+            ExpandableObject = Object.Instantiate(ConfigController.expandablePrefab, _entry.ModHolder.transform);
+            ExpandableObject.name = $"{_name}_Expandable";
+
+            // Get Content
+            Content = ExpandableObject.transform.Find("Content");
+
+            // Get Arrow
+            Arrow = ExpandableObject.transform.Find($"Header/Expander/Arrow").GetComponent<Image>();
+
+            // Set Expand name
+            ExpandableObject.transform.Find($"Header/Expander/Text (TMP)").GetComponent<TextMeshProUGUI>().text = _name.ToString();
+            ExpandableObject.transform.Find($"Header/Expander").GetComponent<Button>().onClick.AddListener(() =>
+            {
+                Expanded = !Expanded;
+
+                if (Expanded)
+                {
+                    Arrow.sprite = ConfigController.Darrow;
+                    Content.gameObject.SetActive(true);
+                }
+                else
+                {
+                    Arrow.sprite = ConfigController.Rarrow;
+                    Content.gameObject.SetActive(false);
+                }
+            });
+        }
+
+        public GameObject ExpandableObject { get; private set; }
+
+        public Expandable instance { get; private set; }
+        public Transform Content { get; private set; }
+        private Image Arrow { get; set; }
+        private bool Expanded { get; set; }
+
+        public Range range(object _name) => new(this, _name);
+    }
+
+    public class Range
+    {
+        // Constructor of the nested class
+        internal Range(Expandable _exp, object _name)
+        {
+            // Create new slider and put it into the content object under the Expandable gameObject
+            //RangeComponent = (RangeObject = Object.Instantiate(ConfigController.rangePrefab, _exp.Content)).GetComponent<DoubleSlider>();
+            RangeObject.name = $"{_name}_RangeSlider";
+        }
+
+        /*
+                public void SetValues(float min, float max, float initMin, float initMax, float minDist, bool whole) => RangeComponent.SetValues(min, max, initMin, initMax, minDist, whole);
+
+                public void SetAction(Action<float, float> action) => RangeComponent.SetAction(action);*/
+
+        public void eh()
+        {
+        }
+
+        public GameObject RangeObject { get; private set; }
+        //public DoubleSlider RangeComponent { get; private set; }
+    }
+
+    public class Toggle
+    {
+        public Toggle(Expandable _exp)
+        {
+            // Create new button and put it into the content object under the Expandable gameObject
+        }
+    }
+}

@@ -1,0 +1,78 @@
+﻿using UnityEngine;
+using LethalSex_Core;
+using System.Threading.Tasks;
+
+namespace LethalSanity.Modules
+{
+	internal class FakeItemsTst : LethalModule
+	{
+		/// <summary>
+		/// Instance of the class.
+		/// </summary>
+		public static FakeItemsTst instance { get; private set; }
+
+		/// <summary>
+		/// Instance of the component.
+		/// </summary>
+		public static FakeItemsTst component { get; private set; }
+
+		/// <summary>
+		/// Create a GameObject to handle fake items.
+		/// </summary>
+		private GameObject ComponentHandler { get; set; }
+
+		/// <summary>
+		/// When the component is registered. Set the instance to this.
+		/// </summary>
+		public override void OnRegister() => instance = this;
+
+		/// <summary>
+		/// When the ship lands, the player should be making their way to the factory or already inside. <br/>
+		/// Adding itself to the new GameObject, we can use "Unity Message's"
+		/// </summary>
+		public override void OnShipLand() => component = (ComponentHandler = new GameObject("FakeItems_Handler")).AddComponent<FakeItemsTst>();
+
+		private void Start()
+		{
+		}
+
+		private float loopInterval { get; set; }
+
+		/// <summary>
+		/// Using a Task to handle the cpu intensive task's while the play can play without noticing any frame lag or studders.
+		/// </summary>
+		/// <returns></returns>
+		private async Task Main_Handler()
+		{
+			/*
+				Before we do anything, we need to check a few things before continuing.
+				If the player is dead.
+				If the loop interval is unwanted / unstable.
+				If true, then there is no point continuing.
+			*/
+			if (LocalPlayer.PlayerController.isPlayerDead || loopInterval <= 0) return;
+
+			/*
+				Now. First, we need to check if we are allowed to spawn scrap.
+				So if they're not inside the factory.
+				Just wait 250ms (0.25s) till they are.
+			*/
+			while (!LocalPlayer.PlayerController.isInsideFactory) await Task.Delay(250);
+
+			/*
+				Now they're inside the factory, start doing the fun stuff!
+			*/
+			while (true)
+			{
+				/*
+					We of course need to check the first check's once again each time it loops.
+				*/
+				if (LocalPlayer.PlayerController.isPlayerDead || loopInterval <= 0) break;
+
+				/*
+					Now we need to check around the player and check if there's a NavMesh
+				*/
+			}
+		}
+	}
+}

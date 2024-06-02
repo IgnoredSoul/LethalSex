@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34607.119
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LethalSex-Core", "LethalSex-Core.csproj", "{AEC54BAA-710E-4860-AED4-D905E4489577}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LethalSanity", "..\LethalSanity\LethalSanity.csproj", "{14118FF6-85F2-4A97-BEFD-CC17379FEFA9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AEC54BAA-710E-4860-AED4-D905E4489577}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEC54BAA-710E-4860-AED4-D905E4489577}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEC54BAA-710E-4860-AED4-D905E4489577}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEC54BAA-710E-4860-AED4-D905E4489577}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14118FF6-85F2-4A97-BEFD-CC17379FEFA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14118FF6-85F2-4A97-BEFD-CC17379FEFA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14118FF6-85F2-4A97-BEFD-CC17379FEFA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14118FF6-85F2-4A97-BEFD-CC17379FEFA9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DB7C86E6-0997-4065-AC1A-CEF697B800F7}
+	EndGlobalSection
+EndGlobal

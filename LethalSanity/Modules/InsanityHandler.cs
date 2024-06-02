@@ -1,0 +1,98 @@
+﻿using System;
+using UnityEngine;
+using LethalSex_Core;
+using GameNetcodeStuff;
+using LethalSex_Core.Modules;
+using System.Collections.Generic;
+
+namespace LethalSanity.Modules
+{
+	internal class InsanityHandler : LethalModule
+	{
+		/// <summary>
+		/// Instance of the class
+		/// </summary>
+		public static InsanityHandler instance { get; private set; }
+
+		/// <summary>
+		/// Instance of the monobehaviour
+		/// </summary>
+		public static InsanityHandler component { get; private set; }
+
+		public static List<Action> onInsanityLevel1Reached = new();
+		public static List<Action> onInsanityLevel1Below = new();
+
+		public static List<Action> onInsanityLevel2Reached = new();
+		public static List<Action> onInsanityLevel2Below = new();
+
+		public static List<Action> onInsanityLevel3Reached = new();
+		public static List<Action> onInsanityLevel3Below = new();
+
+		private bool AppliedLvl1;
+		private bool AppliedLvl2;
+		private bool AppliedLvl3;
+
+		public static GameObject InsanityHandlerObj { get; private set; }
+
+		public override void OnRegister() => instance = this;
+
+		public override void OnShipLand()
+		{
+			component = (InsanityHandlerObj = new GameObject("InsanityHandler")).AddComponent<InsanityHandler>();
+
+			// Apply max insanity
+			LocalPlayer.MaxInsanity = 65;
+		}
+
+		private void LateUpdate()
+		{
+			CheckAndInvokeEvent(25, ref AppliedLvl1, ref onInsanityLevel1Reached, ref onInsanityLevel1Below);
+			CheckAndInvokeEvent(45, ref AppliedLvl2, ref onInsanityLevel2Reached, ref onInsanityLevel2Below);
+			CheckAndInvokeEvent(60, ref AppliedLvl3, ref onInsanityLevel3Reached, ref onInsanityLevel3Below);
+		}
+
+		private void CheckAndInvokeEvent(float threshold, ref bool applied, ref List<Action> onReached, ref List<Action> onBelow)
+		{
+			if (LocalPlayer.Insanity >= threshold && !applied)
+			{
+				applied = true;
+				onReached?.ForEach(a => a?.Invoke());
+			}
+			else if (LocalPlayer.Insanity < threshold && applied)
+			{
+				applied = false;
+				onBelow?.ForEach(a => a?.Invoke());
+			}
+		}
+
+		internal static void SetAction(float lvl, Action on = null, Action off = null)
+		{
+			switch (lvl)
+			{
+				case 1:
+					if (on != null) onInsanityLevel1Reached.Add(on);
+					if (off != null) onInsanityLevel1Below.Add(off);
+					break;
+
+				case 2:
+					if (on != null) onInsanityLevel2Reached.Add(on);
+					if (off != null) onInsanityLevel2Below.Add(off);
+					break;
+
+				case 3:
+					if (on != null) onInsanityLevel3Reached.Add(on);
+					if (off != null) onInsanityLevel3Below.Add(off);
+					break;
+
+				default:
+					throw new ArgumentException($"Invalid level: {lvl}. Level must be 1, 2, or 3.");
+			}
+		}
+
+		private void OnDestroy() => base.Destroyed();
+
+		private void OnDisable() => base.Disabled();
+
+		private void OnEnable() => base.Enabled();
+	}
+}
