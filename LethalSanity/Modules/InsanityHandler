@@ -1,12 +1,30 @@
-﻿using System;
-using UnityEngine;
-using LethalSex_Core;
-using GameNetcodeStuff;
-using LethalSex_Core.Modules;
+﻿using LethalSex_Core;
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace LethalSanity.Modules
 {
+	public class InsanityEvent
+	{
+		public Action _actOn;
+		public Action _actOff;
+		public float _sanity;
+
+		public InsanityEvent(Action act, float sanity)
+		{
+			_actOn = act;
+			_sanity = sanity;
+		}
+
+		public InsanityEvent(Action actOn, Action actOff, float sanity)
+		{
+			_actOn = actOn;
+			_actOff = actOff;
+			_sanity = sanity;
+		}
+	}
+
 	internal class InsanityHandler : LethalModule
 	{
 		/// <summary>
@@ -48,7 +66,7 @@ namespace LethalSanity.Modules
 		{
 			CheckAndInvokeEvent(25, ref AppliedLvl1, ref onInsanityLevel1Reached, ref onInsanityLevel1Below);
 			CheckAndInvokeEvent(45, ref AppliedLvl2, ref onInsanityLevel2Reached, ref onInsanityLevel2Below);
-			CheckAndInvokeEvent(60, ref AppliedLvl3, ref onInsanityLevel3Reached, ref onInsanityLevel3Below);
+			CheckAndInvokeEvent(65, ref AppliedLvl3, ref onInsanityLevel3Reached, ref onInsanityLevel3Below);
 		}
 
 		private void CheckAndInvokeEvent(float threshold, ref bool applied, ref List<Action> onReached, ref List<Action> onBelow)
@@ -89,10 +107,14 @@ namespace LethalSanity.Modules
 			}
 		}
 
+		#region "On" Unity Message's
+
 		private void OnDestroy() => base.Destroyed();
 
 		private void OnDisable() => base.Disabled();
 
 		private void OnEnable() => base.Enabled();
+
+		#endregion "On" Unity Message's
 	}
 }

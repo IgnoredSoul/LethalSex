@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using LethalSex_Core;
-using GameNetcodeStuff;
 using UnityEngine.Rendering;
 using LethalSex_Core.Modules;
 using UnityEngine.Rendering.HighDefinition;
@@ -9,8 +8,6 @@ namespace LethalSanity.Modules
 {
 	internal class PostProcessing : LethalModule
 	{
-		#region Vars
-
 		/// <summary>
 		/// Instance of the class
 		/// </summary>
@@ -31,8 +28,6 @@ namespace LethalSanity.Modules
 		/// </summary>
 		private VolumeProfile VolumeProfile { get; set; }
 
-		#endregion Vars
-
 		/// <summary>
 		/// When registering the module, check the config to see if the user wants this module disabled
 		/// </summary>
@@ -42,21 +37,14 @@ namespace LethalSanity.Modules
 		/// When the local player initializes
 		/// </summary>
 		/// <param name="_LocalPlayer"></param>
-		public override void OnShipLand()
-		{
-			component = InsanityHandler.InsanityHandlerObj.AddComponent<PostProcessing>();
-		}
+		public override void OnShipLand() => component = LocalPlayer.Player.AddComponent<PostProcessing>();
 
 		private void Start()
 		{
 			VolumeObject = Instantiate(
 				GameObject.Find("Systems/Rendering/VolumeMain"),
-				GameObject.Find("Systems/Rendering/VolumeMain").transform.parent);  // Make new Volume Object
-
-			InsanityHandler.onInsanityLevel1Reached.Add(() =>
-			{
-				HUDManager.Instance.ShakeCamera(ScreenShakeType.Small);
-			});                  // Make a indicator for when player is going insane.
+				GameObject.Find("Systems/Rendering/VolumeMain").transform.parent
+			);                                                                      // Make new Volume Object
 
 			VolumeObject.name = "LS-Volume";                                        // Rename object
 
@@ -64,20 +52,16 @@ namespace LethalSanity.Modules
 
 			VolumeProfile.name = "LS-VolumeProfile";                                // Name new VolumeProfile
 
+			VolumeObject.GetComponentInChildren<Volume>().priority = Main.config.PP;// Set the volume's priority
+
 			VolumeObject.GetComponentInChildren<Volume>().profile = VolumeProfile;  // Assign profile
 
-			/*
-				Do config options for toggling on and off certain effects.
-			*/
-
-			MakeVignette();
-			MakeFilmGrain();
-			MakeChrAb();
-			MakeLensDist();
 			MakeDOF();
-			MakeCamAdj();
-
-			LocalPlayer.Insanity = 25;
+			MakeChrAb();
+			MakeVignette();
+			MakeLensDist();
+			MakeFilmGrain();
+			MakeSaturation();
 		}
 
 		/// <summary>
@@ -85,15 +69,20 @@ namespace LethalSanity.Modules
 		/// </summary>
 		private void MakeVignette()
 		{
+			// If the effect should be turned off.
+			if (!Main.config.VC.Item1) return;
+
+			// Get random insanity level to activate
+			float insanitylvl = NumberUtils.NextO(Main.config.VC.Item2, Main.config.VC.Item3, 65);
+
 			// Set up Vignette effect
 			Vignette VignetteComp = VolumeProfile.Add<Vignette>();
 			VignetteComp.smoothness.value = 1;
 			VignetteComp.roundness.value = 0.842f;
 			VignetteComp.name = "LS-VignetteComp";
 
-			// Set up Vignette on and off actions
-			int lvl = NumberUtils.Next(1, 2);
-			InsanityHandler.SetAction(lvl, () =>
+			// Set up Vignette event
+			AddSanityEvent(insanitylvl, () =>
 			{
 				float val = NumberUtils.NextF(0.45f, 0.6f);
 				float time = NumberUtils.NextF(10f, 25f);
@@ -105,7 +94,8 @@ namespace LethalSanity.Modules
 				ConsoleManager.Log($"Resetting Vignette (0/{time})");
 				Extensions.SmoothIncrementValue("Vignette", VignetteComp.intensity.Override, VignetteComp.intensity.value, 0, time);
 			});
-			ConsoleManager.Log($"Vignette applies at lvl: {lvl}");
+
+			ConsoleManager.Log($"Vignette applies at lvl: {insanitylvl}");
 		}
 
 		/// <summary>
@@ -113,13 +103,18 @@ namespace LethalSanity.Modules
 		/// </summary>
 		private void MakeFilmGrain()
 		{
+			// If the effect should be turned off.
+			if (!Main.config.FGC.Item1) return;
+
+			// Get random insanity level to activate
+			float insanitylvl = NumberUtils.NextO(Main.config.FGC.Item2, Main.config.FGC.Item3, 65);
+
 			// Set up Film Grain effect
 			FilmGrain FilmGrainComp = VolumeProfile.Add<FilmGrain>();
 			FilmGrainComp.name = "LS-FilmGrainComp";
 
-			// Set up Film Grain on and off actions
-			int lvl = NumberUtils.Next(1, 2);
-			InsanityHandler.SetAction(lvl, () =>
+			// Set up Film Grain event
+			AddSanityEvent(insanitylvl, () =>
 			{
 				float val = NumberUtils.NextF(0.5f, 1f);
 				float time = NumberUtils.NextF(10, 20);
@@ -131,7 +126,7 @@ namespace LethalSanity.Modules
 				ConsoleManager.Log($"Resetting FilmGrain (0/{time})");
 				Extensions.SmoothIncrementValue("FilmGrain", FilmGrainComp.intensity.Override, FilmGrainComp.intensity.value, 0f, time);
 			});
-			ConsoleManager.Log($"Film Grain applies at lvl: {lvl}");
+			ConsoleManager.Log($"Film Grain applies at lvl: {insanitylvl}");
 		}
 
 		/// <summary>
@@ -139,13 +134,18 @@ namespace LethalSanity.Modules
 		/// </summary>
 		private void MakeChrAb()
 		{
+			// If the effect should be turned off.
+			if (!Main.config.CAC.Item1) return;
+
+			// Get random insanity level to activate
+			float insanitylvl = NumberUtils.NextO(Main.config.CAC.Item2, Main.config.CAC.Item3, 65);
+
 			// Set up Chromatic Aberration effect
 			ChromaticAberration ChrAbComp = VolumeProfile.Add<ChromaticAberration>();
 			ChrAbComp.name = "LS-ChrAbComp";
 
-			// Set up Chromatic Aberration on and off actions
-			int lvl = NumberUtils.Next(2, 3);
-			InsanityHandler.SetAction(lvl, () =>
+			// Set up Chromatic Aberration event
+			AddSanityEvent(insanitylvl, () =>
 			{
 				float val = NumberUtils.NextF(1f, 2f);
 				float time = NumberUtils.NextF(10, 20);
@@ -158,7 +158,7 @@ namespace LethalSanity.Modules
 				Extensions.SmoothIncrementValue("ChrAb", ChrAbComp.intensity.Override, ChrAbComp.intensity.value, 0f, NumberUtils.NextF(0.5f, 2));
 			});
 
-			ConsoleManager.Log($"Chromatic Aberration applies at lvl: {lvl}");
+			ConsoleManager.Log($"Chromatic Aberration applies at lvl: {insanitylvl}");
 		}
 
 		/// <summary>
@@ -166,13 +166,18 @@ namespace LethalSanity.Modules
 		/// </summary>
 		private void MakeLensDist()
 		{
+			// If the effect should be turned off.
+			if (!Main.config.LDC.Item1) return;
+
+			// Get random insanity level to activate
+			float insanitylvl = NumberUtils.NextO(Main.config.LDC.Item2, Main.config.LDC.Item3, 65);
+
 			// Set up Lens Distortion effect.
 			LensDistortion LensDistComp = VolumeProfile.Add<LensDistortion>();
 			LensDistComp.name = "LS-LensDistComp";
 
-			// Set up Lens Distortion on and off actions
-			int lvl = NumberUtils.Next(2, 3);
-			InsanityHandler.SetAction(lvl, () =>
+			// Set up Lens Distortion event
+			AddSanityEvent(insanitylvl, () =>
 			{
 				float val = NumberUtils.NextF(0.4f, 0.6f);
 				float time = NumberUtils.NextF(20, 30);
@@ -185,7 +190,7 @@ namespace LethalSanity.Modules
 				Extensions.SmoothIncrementValue("LensDist", LensDistComp.intensity.Override, LensDistComp.intensity.value, 0, time);
 			});
 
-			ConsoleManager.Log($"Lens Distortion applies at lvl: {lvl}");
+			ConsoleManager.Log($"Lens Distortion applies at lvl: {insanitylvl}");
 		}
 
 		/// <summary>
@@ -193,15 +198,20 @@ namespace LethalSanity.Modules
 		/// </summary>
 		private void MakeDOF()
 		{
+			// If the effect should be turned off.
+			if (!Main.config.DOFC.Item1) return;
+
+			// Get random insanity level to activate
+			float insanitylvl = NumberUtils.NextO(Main.config.DOFC.Item2, Main.config.DOFC.Item3, 65);
+
 			// Set up Depth of Field effect
 			DepthOfField DOFComp = VolumeProfile.Add<DepthOfField>();
 			DOFComp.farFocusStart.Override(2000);
 			DOFComp.farFocusEnd.Override(2000);
 			DOFComp.name = "LS-DOFComp";
 
-			// Set up Depth of Field on and off actions
-			int lvl = NumberUtils.Next(2, 3);
-			InsanityHandler.SetAction(lvl, () =>
+			// Set up Depth of Field event
+			AddSanityEvent(insanitylvl, () =>
 			{
 				float val = NumberUtils.NextF(3, 8);
 				float time = NumberUtils.NextF(10, 17);
@@ -223,21 +233,26 @@ namespace LethalSanity.Modules
 				Extensions.SmoothIncrementValue("DOFEnd", DOFComp.farFocusEnd.Override, DOFComp.farFocusEnd.value, 2000, time_);
 			});
 
-			ConsoleManager.Log($"Depth Of Field applies at lvl: {lvl}");
+			ConsoleManager.Log($"Depth Of Field applies at lvl: {insanitylvl}");
 		}
 
 		/// <summary>
 		/// Prepares the Color Adjustments effect.
 		/// </summary>
-		private void MakeCamAdj()
+		private void MakeSaturation()
 		{
+			// If the effect should be turned off.
+			if (!Main.config.SC.Item1) return;
+
+			// Get random insanity level to activate
+			float insanitylvl = NumberUtils.NextO(Main.config.SC.Item2, Main.config.SC.Item3, 65);
+
 			// Set up Color Adjustments effect.
 			ColorAdjustments CAComp = VolumeProfile.Add<ColorAdjustments>();
 			CAComp.name = "LS-CAComp";
 
-			// Set up Color Adjustments on and off actions
-			int lvl = NumberUtils.Next(2, 3);
-			InsanityHandler.SetAction(lvl, () =>
+			// Set up Color Adjustments event
+			AddSanityEvent(insanitylvl, () =>
 			{
 				float val = NumberUtils.NextF(50, 70);
 				float time = NumberUtils.NextF(18, 28);
@@ -250,10 +265,10 @@ namespace LethalSanity.Modules
 				Extensions.SmoothIncrementValue("CA", CAComp.saturation.Override, CAComp.saturation.value, 0, time);
 			});
 
-			ConsoleManager.Log($"Color Adjustments applies at lvl: {lvl}");
+			ConsoleManager.Log($"Color Adjustments applies at lvl: {insanitylvl}");
 		}
 
-		#region Unity Calls
+		#region "On" Unity Message's
 
 		private void OnDestroy() => base.Destroyed();
 
@@ -261,6 +276,6 @@ namespace LethalSanity.Modules
 
 		private void OnEnable() => base.Enabled();
 
-		#endregion Unity Calls
+		#endregion "On" Unity Message's
 	}
 }

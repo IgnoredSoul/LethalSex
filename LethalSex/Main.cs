@@ -12,8 +12,8 @@ namespace LethalSex_Core
 	public class Main : BaseUnityPlugin
 	{
 		internal readonly Harmony harmony = new(modGUID);
-		internal const string modVersion = "2.0.0";
-		private const string modGUID = "com.Github.IGNOREDSOUL.LethalSex.LethalSexCore";
+		internal const string modVersion = "2.0.1";
+		private const string modGUID = "com.GitHub.IGNOREDSOUL.LethalSex.LethalSexCore";
 		private const string modName = "LethalSex-Core";
 
 		private const string waterMark = @"
@@ -26,9 +26,9 @@ namespace LethalSex_Core
   ▐         ▐        ▐ IGNORED  ▐   ▐   SOUL       ▐                     ▐         █    ▐    ";
 
 		public static Main instance { get; private set; }
-		public static ManualLogSource mls { get; private set; }
-		internal static AssetBundle bundle { get; private set; }
+		internal static ManualLogSource mls { get; private set; }
 		internal static LethalMod CoreMod { get; private set; }
+		internal static AssetBundle bundle { get; private set; }
 
 		protected internal static List<LethalMod> LethalMods = new();
 
@@ -56,6 +56,7 @@ namespace LethalSex_Core
 			CoreMod = RegisterMod(modName, modVersion, "IGNOREDSOUL");
 
 			CoreMod.RegisterModule(typeof(Modules.ConsoleManager));
+			CoreMod.RegisterModule(typeof(Modules.SanityEventManager));
 			//CoreMod.RegisterModule(typeof(Modules.DevHelper));
 		}
 

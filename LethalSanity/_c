@@ -6,20 +6,18 @@ using BepInEx.Configuration;
 
 namespace LethalSanity
 {
-    internal class Config
-    {
-        internal static JObject config { get; private set; }
+	internal class _c
+	{
+		internal static JObject config { get; private set; }
 
-        internal void Init()
-        {
-            // =====================================================[ Create / Read ]===================================================== \\
-            ConfigFile _config = new ConfigFile(Path.Combine(Paths.ConfigPath, "LethalSanity.cfg"), true, new(Main.modGUID, Main.modName, Main.modVersion));
-            JObject _cfg = new();
+		internal void Init()
+		{
+			// =====================================================[ Create / Read ]===================================================== \\
+			ConfigFile _config = new ConfigFile(Path.Combine(Paths.ConfigPath, "LethalSanity.cfg"), true, new(Main.modGUID, Main.modName, Main.modVersion));
 
-            // ==========================================================[ Info ]========================================================== \\
-            _config.Bind("!Info!", "READ", "https://github.com/IgnoredSoul/LethalSex, Yes some descriptions do get cut off, so please visit the github repo for more information!"); /* Info / Warning I guess. */
+			// ==========================================================[ Info ]========================================================== \\
 
-            config = NecroAssembler.CreateEntry((config) =>
+			/*config = NecroAssembler.CreateEntry((config) =>
             {
                 #region ====================================================[ Post Processing ]====================================================
 
@@ -220,9 +218,7 @@ namespace LethalSanity
                  );
 
                 #endregion ======================================================[ Camera Shake ]======================================================
-            });
-
-            Debug.LogError(config);
-        }
-    }
+            });*/
+		}
+	}
 }

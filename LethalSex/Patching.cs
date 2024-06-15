@@ -2,9 +2,6 @@
 using UnityEngine;
 using GameNetcodeStuff;
 using static LethalSex_Core.Extensions;
-using System.Collections;
-using System.Threading.Tasks;
-using LethalSex_Core.Modules;
 
 namespace LethalSex_Core
 {
@@ -12,205 +9,194 @@ namespace LethalSex_Core
 	public static class Patching
 	{
 		/// <summary>
-		/// Handles the patch for HUDManager's Awake method.
-		/// </summary>
-		[HarmonyPatch(typeof(HUDManager), "Awake")]
-		[HarmonyPostfix]
-		private static void _handle_OnHUDAwake()
-		{
-			TryCatch("An error occoured at _handle_OnHUDAwake", () =>
-			{
-				// Loop through mods
-				Main.LethalMods.ForEach(mod =>
-				{
-					TryCatch("An error occoured at _handle_OnHUDAwake. Failed to loop through module list", () =>
-					{
-						// Loop through modules
-						mod.Modules.ForEach(m =>
-						{
-							TryCatch("An error occoured at _handle_OnHUDAwake. Failed to send OnHUDAwake", () =>
-							{
-								// Invoke method
-								m?.OnHUDAwake();
-							});
-						});
-					});
-				});
-			});
-		}
-
-		/// <summary>
-		/// Handles the patch for HUDManager's Start method.
-		/// <br/>
-		/// Also doubles for the OnLocalPlayerStart virtual method.
+		/// When the class 'HUDManager' component calls the method.
+		/// <br/><b><u>POSTFIX</u></b>
 		/// </summary>
 		[HarmonyPatch(typeof(HUDManager), "Start")]
 		[HarmonyPostfix]
-		private static void _handle_OnHUDStart()
+		private static void ONHUDSTART()
 		{
-			TryCatch("An error occoured at _handle_OnHUDStart", () =>
+			// Loop through registered mod's list.
+			Main.LethalMods.ForEach(mod =>
 			{
-				// Loop through mods
-				Main.LethalMods.ForEach(mod =>
+				// Loop through modules registered inside the mod.
+				mod.Modules.ForEach(module =>
 				{
-					TryCatch("An error occoured at _handle_OnHUDStart. Failed to loop through module list", () =>
+					// Handle errors that may arise when invoking the method.
+					TryCatch($"An error occoured at ONHUDSTART. Failed to send OnHUDStart to module: {module.ModuleName}", () =>
 					{
-						// Loop through modules
-						mod.Modules.ForEach(m =>
-						{
-							TryCatch("An error occoured at _handle_OnHUDStart. Failed to send OnHUDStart", () =>
-							{
-								// Invoke method
-								m?.OnHUDStart();
-							});
-						});
-					});
-				});
-			});
-
-			TryCatch("An error occoured at _handle_OnHUDStart | 2", () =>
-			{
-				// Loop through mods
-				Main.LethalMods.ForEach(mod =>
-				{
-					TryCatch("An error occoured at _handle_OnHUDStart. Failed to loop through module list | 2", () =>
-					{
-						// Loop through modules
-						mod.Modules.ForEach(m =>
-						{
-							TryCatch("An error occoured at _handle_OnHUDStart | 2. Failed to send OnLocalPlayerStart", async () =>
-							{
-								// Invoke method if player controller exists
-								await LocalPlayer.PlayerControllerAsync()
-								.ContinueWith(task => { if (task.Result) m?.OnLocalPlayerStart(task.Result); });
-							});
-						});
+						module?.OnHUDStart();   // Invoke method
 					});
 				});
 			});
 		}
 
 		/// <summary>
-		/// Handles the patch for StartOfRound's OnShipLandedMiscEvents method.
+		/// When the class 'HUDManager' component calls the method.
+		/// <br/><b><u>POSTFIX</u></b>
+		/// </summary>
+		[HarmonyPatch(typeof(HUDManager), "Awake")]
+		[HarmonyPostfix]
+		private static void ONHUDAWAKE()
+		{
+			// Loop through registered mod's list.
+			Main.LethalMods.ForEach(mod =>
+			{
+				// Loop through modules registered inside the mod.
+				mod.Modules.ForEach(module =>
+				{
+					// Handle errors that may arise when invoking the method.
+					TryCatch($"An error occoured at ONHUDAWAKE. Failed to send OnHUDAwake to module: {module.ModuleName}", () =>
+					{
+						module?.OnHUDAwake();   // Invoke method
+					});
+				});
+			});
+		}
+
+		/// <summary>
+		/// When the class 'HUDManager' component calls the method.
+		/// <br/><b><u>POSTFIX</u></b><br/>
+		/// <b><u>NO VIRTUAL / OVERRIDE</u></b>
+		/// </summary>
+		[HarmonyPatch(typeof(HUDManager), "Update")]
+		[HarmonyPostfix]
+		private static void ONHUDUPDATE()
+		{
+			ONSANITYCHANGED();
+		}
+
+		/// <summary>
+		/// When the class 'StartOfRound' component calls the method.
+		/// <br/><b><u>POSTFIX</u></b>
 		/// </summary>
 		[HarmonyPatch(typeof(StartOfRound), "OnShipLandedMiscEvents")]
 		[HarmonyPostfix]
-		private static void _handle_OnShipLand()
+		private static void ONSHIPLAND()
 		{
-			TryCatch("An error occoured at _handle_OnShipLand", () =>
+			// Loop through registered mod's list.
+			Main.LethalMods.ForEach(mod =>
 			{
-				// Loop through mods
-				Main.LethalMods.ForEach(mod =>
+				// Loop through modules registered inside the mod.
+				mod.Modules.ForEach(module =>
 				{
-					TryCatch("An error occoured at _handle_OnShipLand. Failed to loop through module list", () =>
+					// Handle errors that may arise when invoking the method.
+					TryCatch($"An error occoured at ONSHIPLAND. Failed to send OnShipLand to module: {module.ModuleName}", () =>
 					{
-						// Loop through modules
-						mod.Modules.ForEach(m =>
-						{
-							TryCatch("An error occoured at _handle_OnShipLand. Failed to send OnShipLand", () =>
-							{
-								// Invoke method
-								m?.OnShipLand();
-							});
-						});
+						module?.OnShipLand();   // Invoke method
 					});
 				});
 			});
 		}
 
 		/// <summary>
-		/// Handles the patch for PlayerControllerB's isPlayerDead 'method'.
+		/// When the class 'PlayerControllerB' component calls the method.
+		/// <br/><b><u>POSTFIX</u></b>
+		/// </summary>
+		[HarmonyPatch(typeof(PlayerControllerB), "ConnectClientToPlayerObject")]
+		[HarmonyPostfix]
+		private static void ONLOCALSTART(PlayerControllerB __instance)
+		{
+			// Loop through registered mod's list.
+			Main.LethalMods.ForEach(mod =>
+			{
+				// Loop through modules registered inside the mod.
+				mod.Modules.ForEach(module =>
+				{
+					// Handle errors that may arise when invoking the method.
+					TryCatch($"An error occoured at ONPLAYERSTART. Failed to send OnHUDAwake to module: {module.ModuleName}", () =>
+					{
+						module?.OnLocalStart(__instance);   // Invoke method
+					});
+				});
+			});
+		}
+
+		/// <summary>
+		/// When the class 'PlayerControllerB' component calls the method.
+		/// <br/><b><u>POSTFIX</u></b>
 		/// </summary>
 		[HarmonyPatch(typeof(PlayerControllerB), "KillPlayer")]
 		[HarmonyPostfix]
-		private static void _handle_OnPlayerDie()
+		private static void ONLOCALDIE()
 		{
-			TryCatch("An error occoured at _handle_OnPlayerDie", () =>
-			{
-				TryCatch("An error occoured at _handle_OnPlayerDie. Failed to get localplayer", () =>
-				{
-					if ((bool)!LocalPlayer.PlayerController?.isPlayerDead) return;
-				});
+			// Since any player can invoke this method, we need to check if its us first.
+			if ((bool)!LocalPlayer.PlayerController?.isPlayerDead) return;
 
-				// Loop through mods
-				Main.LethalMods.ForEach(mod =>
+			// Loop through registered mod's list.
+			Main.LethalMods.ForEach(mod =>
+			{
+				// Loop through modules registered inside the mod.
+				mod.Modules.ForEach(module =>
 				{
-					TryCatch("An error occoured at _handle_OnPlayerDie. Failed to loop through module list", () =>
+					// Handle errors that may arise when invoking the method.
+					TryCatch($"An error occoured at ONKILLPLAYER. Failed to send OnLocalPlayerDie to module: {module.ModuleName}", () =>
 					{
-						// Loop through modules
-						mod.Modules.ForEach(m =>
-						{
-							TryCatch("An error occoured at _handle_OnPlayerDie. Failed to send OnLocalPlayerDie", () =>
-							{
-								// Invoke method
-								m?.OnLocalPlayerDie();
-							});
-						});
+						module?.OnLocalDie();   // Invoke method
 					});
 				});
 			});
 		}
 
 		/// <summary>
-		/// Handles the patch for PlayerControllerB's BeginGrabObject method.
+		/// When the class 'PlayerControllerB' component calls the method.
+		/// <br/><b><u>POSTFIX</u></b>
 		/// </summary>
 		[HarmonyPatch(typeof(PlayerControllerB), "BeginGrabObject")]
-		[HarmonyPrefix]
-		private static void _handle_OnGrabObject()
+		[HarmonyPostfix]
+		private static void ONGRABOBJECT()
 		{
-			TryCatch("An error occoured at _handle_OnGrabObject", () =>
-			{
-				// Loop through mods
-				Main.LethalMods.ForEach(mod =>
-				{
-					TryCatch("An error occoured at _handle_OnGrabObject. Failed to loop through module list", () =>
-					{
-						// Loop through modules
-						mod.Modules.ForEach(m =>
-						{
-							TryCatch("An error occoured at _handle_OnGrabObject. Failed to send OnGrabObject", () =>
-							{
-								// Cast ray
-								Ray interactRay = new Ray(LocalPlayer.PlayerController.gameplayCamera.transform.position, LocalPlayer.PlayerController.gameplayCamera.transform.forward);
+			// Since any player can invoke this method, we need to check if its us first.
+			if ((bool)!LocalPlayer.PlayerController?.isPlayerDead || !LocalPlayer.Interected) return;
 
-								// Raycast hit and invoke method
-								if (Physics.Raycast(interactRay, out RaycastHit hit, LocalPlayer.PlayerController.grabDistance, 832))
-									if (hit.collider?.transform.gameObject?.GetComponent<GrabbableObject>() != null)
-										m?.OnGrabObject(hit.collider.transform.gameObject.GetComponent<GrabbableObject>());
-							});
-						});
+			// Loop through registered mod's list.
+			Main.LethalMods.ForEach(mod =>
+			{
+				// Loop through modules registered inside the mod.
+				mod.Modules.ForEach(module =>
+				{
+					// Handle errors that may arise when invoking the method.
+					TryCatch($"An error occoured at ONGRABOBJECT. Failed to send OnGrabObject to module: {module.ModuleName}", () =>
+					{
+						// Cast ray from our position downwards.
+						Ray interactRay = new Ray(LocalPlayer.PlayerController.gameplayCamera.transform.position, LocalPlayer.PlayerController.gameplayCamera.transform.forward);
+
+						// Raycast down at the length of the item(?) and its layer.
+						if (Physics.Raycast(interactRay, out RaycastHit hit, LocalPlayer.PlayerController.grabDistance, 832))
+							if (hit.collider?.transform.gameObject?.GetComponent<GrabbableObject>() != null) // Check if the object we hit has the component of 'GrabbaleObject'
+								module?.OnGrabObject(hit.collider.transform.gameObject.GetComponent<GrabbableObject>()); // Invoke with the object
 					});
 				});
 			});
 		}
 
-		/*        [HarmonyPatch(typeof(PlayerControllerB), "DamagePlayer")]
-				[HarmonyPrefix]
-				private static bool _handle_OnDamagePlayer(int damageNumber, bool hasDamageSFX = true, bool callRPC = true, CauseOfDeath causeOfDeath = CauseOfDeath.Unknown, int deathAnimation = 0, bool fallDamage = false, Vector3 force = default)
+		private static float prev_san { get; set; } = -666f;
+
+		private static void ONSANITYCHANGED()
+		{
+			// If the player is null or player is dead
+			if (!LocalPlayer.Player || (bool)LocalPlayer.PlayerController?.isPlayerDead) return;
+
+			// If the previous value is not the same as current value
+			if (prev_san != float.Parse(LocalPlayer.Insanity.ToString("0.0")))
+			{
+				// Set previous value to current value
+				prev_san = float.Parse(LocalPlayer.Insanity.ToString("0.0"));
+
+				// Loop through registered mod's list.
+				Main.LethalMods.ForEach(mod =>
 				{
-					bool __res = true;
-					TryCatch("An error occoured at _handle_OnDamagePlayer", () =>
+					// Loop through modules registered inside the mod.
+					mod.Modules.ForEach(module =>
 					{
-						// Loop through mods
-						Main.LethalMods.ForEach(mod =>
+						// Handle errors that may arise when invoking the method.
+						TryCatch($"An error occoured at ONSANITYCHANGED. Failed to send OnSanityChanged to module: {module.ModuleName}", () =>
 						{
-							TryCatch("An error occoured at _handle_OnDamagePlayer. Failed to loop through module list", () =>
-							{
-								// Loop through modules
-								mod.Modules.ForEach(m =>
-								{
-									TryCatch("An error occoured at _handle_OnDamagePlayer. Failed to send OnDamagePlayer", () =>
-									{
-										// Invoke method
-										__res = m.OnDamagePlayer(ref damageNumber, ref hasDamageSFX, ref callRPC, ref causeOfDeath, ref deathAnimation, ref fallDamage, ref force);
-									});
-								});
-							});
+							module?.OnSanityChanged(LocalPlayer.Insanity);   // Invoke method
 						});
 					});
-
-					ConsoleManager.Log($"Res: {__res}");
-					return __res;
-				}*/
+				});
+			}
+		}
 	}
 }

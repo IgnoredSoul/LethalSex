@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Text;
 using UnityEngine;
+using UnityEngine.AI;
 using GameNetcodeStuff;
 using System.Threading;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using LethalSex_Core.Modules;
+using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using static UnityEngine.InputSystem.InputRemoting;
-using System.Diagnostics;
-using UnityEngine.AI;
 
 namespace LethalSex_Core
 {
@@ -317,6 +317,18 @@ namespace LethalSex_Core
 		/// <returns>A random integer within the specified range.</returns>
 		public static int Next(int min, int max) => random.Next(min, max + 1);
 
+		public static int NextO(int input, int offset) => Mathf.Clamp(Next(input - offset, input + offset), 0, int.MaxValue);
+
+		public static int NextO(int input, int offset, int max) => Mathf.Clamp(Next(input - offset, input + offset), 0, max);
+
+		public static int NextO(int input, int offset, int min, int max) => Mathf.Clamp(Next(input - offset, input + offset), min, max);
+
+		public static float NextO(float input, float offset) => Mathf.Clamp(NextF(input - offset, input + offset), 0, float.MaxValue);
+
+		public static float NextO(float input, float offset, float max) => Mathf.Clamp(NextF(input - offset, input + offset), 0, max);
+
+		public static float NextO(float input, float offset, float min, float max) => Mathf.Clamp(NextF(input - offset, input + offset), min, max);
+
 		/// <summary>
 		/// Returns a random float number between 0.0 and the maximum value representable by a float (not inclusive).
 		/// </summary>
@@ -388,12 +400,9 @@ namespace LethalSex_Core
 		/// <summary>
 		/// Gets the <see cref="PlayerControllerB"/> instance representing the local player controller.
 		/// </summary>
-		public static PlayerControllerB PlayerController
+		public static PlayerControllerB? PlayerController
 		{
-			get
-			{
-				return GameNetworkManager.Instance?.localPlayerController ?? null;
-			}
+			get => GameNetworkManager.Instance?.localPlayerController ?? null;
 		}
 
 		/// <summary>
@@ -424,13 +433,7 @@ namespace LethalSex_Core
 		/// <summary>
 		/// Gets the <see cref="GameObject"/> representing the local player.
 		/// </summary>
-		public static GameObject Player
-		{
-			get
-			{
-				return PlayerController?.gameObject;
-			}
-		}
+		public static GameObject? Player => PlayerController?.gameObject;
 
 		/// <summary>
 		/// Asynchronously retrieves the <see cref="GameObject"/> representing the local player.
@@ -461,14 +464,8 @@ namespace LethalSex_Core
 		/// </summary>
 		public static float Insanity
 		{
-			get
-			{
-				return PlayerController?.insanityLevel ?? -1;
-			}
-			set
-			{
-				if (PlayerController) PlayerController.insanityLevel = value;
-			}
+			get => PlayerController?.insanityLevel ?? -1;
+			set => PlayerController.insanityLevel = value;
 		}
 
 		/// <summary>
@@ -499,14 +496,8 @@ namespace LethalSex_Core
 		/// </summary>
 		public static float MaxInsanity
 		{
-			get
-			{
-				return PlayerController?.maxInsanityLevel ?? -1;
-			}
-			set
-			{
-				if (PlayerController) PlayerController.maxInsanityLevel = value;
-			}
+			get => PlayerController?.maxInsanityLevel ?? -1;
+			set => PlayerController.maxInsanityLevel = value;
 		}
 
 		/// <summary>
@@ -535,12 +526,9 @@ namespace LethalSex_Core
 		/// <summary>
 		/// Gets the camera attached to the local player.
 		/// </summary>
-		public static Camera Camera
+		public static Camera? Camera
 		{
-			get
-			{
-				return Player?.GetComponentInChildren<Camera>();
-			}
+			get => Player?.GetComponentInChildren<Camera>();
 		}
 
 		/// <summary>
@@ -589,6 +577,11 @@ namespace LethalSex_Core
 		}
 
 		/// <summary>
+		/// Retireves all the input's the player performs.
+		/// </summary>
+		public static InputActionAsset Actions = IngamePlayerSettings.Instance?.playerInput?.actions;
+
+		/// <summary>
 		/// Indicates whether the quick menu is open for the local player.
 		/// </summary>
 		public static bool IsMenuOpen => PlayerController.quickMenuManager.isMenuOpen;
@@ -597,5 +590,10 @@ namespace LethalSex_Core
 		/// Indicates whether the terminal menu is open for the local player.
 		/// </summary>
 		public static bool IsTermOpen => PlayerController.inTerminalMenu;
+
+		/// <summary>
+		/// Indicated whether the player pressed their 'interact' button.
+		/// </summary>
+		public static bool Interected => Actions.FindAction("Interact", false).WasPressedThisFrame();
 	}
 }

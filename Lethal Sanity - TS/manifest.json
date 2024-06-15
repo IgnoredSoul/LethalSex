@@ -1,0 +1,10 @@
+{
+  "name": "LethalSanity",
+  "version_number": "2.0.0",
+  "website_url": "https://github.com/IgnoredSoul/LethalSex/tree/main/LethalSanity",
+  "description": "Extends the insanity system uwu",
+  "dependencies": [
+    "BepInEx-BepInExPack-5.4.2100",
+    "LethalSex-LethalSex_Core-2.0.1"
+  ]
+}
