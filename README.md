@@ -1,6 +1,6 @@
 <div align="center">
 
-# [Lethal Sex](https://discord.gg/Gu96JVv93V) [VERY FUCKING WIP]
+# Lethal Sex [VERY FUCKING WIP]
 
 <img src="https://github.com/IgnoredSoul/LethalSex/assets/61690983/f5beeeb1-cd97-40b9-a2be-c36ed468c2ee" width=40.3%/>
 <img src="https://github.com/IgnoredSoul/LethalSex/assets/61690983/a3ca1827-391e-4cf3-a7f7-a49a5fc3a2ab" width=41%/>
